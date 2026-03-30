@@ -8,7 +8,6 @@ export function LoginPage() {
   const from = (location.state as { from?: { pathname: string } } | null)
     ?.from?.pathname;
 
-  const [username, setUsername] = useState("1234");
   const [password, setPassword] = useState("1234");
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -22,7 +21,7 @@ export function LoginPage() {
     setError(null);
     setBusy(true);
     try {
-      await login(username, password);
+      await login(password);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Login failed");
     } finally {
@@ -37,25 +36,10 @@ export function LoginPage() {
           Fire &amp; Safety — Jalsa 2026
         </h1>
         <p className="mt-2 text-sm text-slate-600">
-          Sign in with the team username and password (24–26 July 2026). Unless
-          your environment variables override them, both are{" "}
-          <strong>1234</strong>.
+          Sign in with the team password (24–26 July 2026). Unless your environment
+          overrides it, use <strong>1234</strong>.
         </p>
         <form onSubmit={(e) => void onSubmit(e)} className="mt-8 space-y-4">
-          <div>
-            <label htmlFor="username" className="block text-sm font-medium text-slate-700">
-              Username
-            </label>
-            <input
-              id="username"
-              name="username"
-              autoComplete="username"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              className="mt-1 w-full min-h-11 rounded-lg border border-slate-300 px-3 py-2 text-base text-slate-900"
-              required
-            />
-          </div>
           <div>
             <label htmlFor="password" className="block text-sm font-medium text-slate-700">
               Password

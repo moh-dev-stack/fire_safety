@@ -33,12 +33,12 @@ async function apiFetch(path: string, init?: RequestInit) {
   return res;
 }
 
-export async function login(username: string, password: string) {
+export async function login(password: string) {
   let res: Response;
   try {
     res = await apiFetch("/api/login", {
       method: "POST",
-      body: JSON.stringify({ username, password }),
+      body: JSON.stringify({ password }),
     });
   } catch {
     throw new Error(

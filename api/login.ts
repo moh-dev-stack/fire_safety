@@ -10,15 +10,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   try {
     const body =
       typeof req.body === "string" ? JSON.parse(req.body) : req.body;
-    const username = String(body?.username ?? "").trim();
     const password = String(body?.password ?? "").trim();
 
-    // Defaults match project convention; override with AUTH_USERNAME / AUTH_PASSWORD in env (e.g. Vercel).
-    const okUser = process.env.AUTH_USERNAME?.trim() || "1234";
+    // Defaults match project convention; override with AUTH_PASSWORD in env (e.g. Vercel).
     const okPass = process.env.AUTH_PASSWORD?.trim() || "1234";
 
-    if (username !== okUser || password !== okPass) {
-      res.status(401).json({ error: "Invalid username or password" });
+    if (password !== okPass) {
+      res.status(401).json({ error: "Invalid password" });
       return;
     }
 

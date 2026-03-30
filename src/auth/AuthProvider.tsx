@@ -24,13 +24,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     })();
   }, [refresh]);
 
-  const login = useCallback(
-    async (username: string, password: string) => {
-      await api.login(username, password);
-      setAuthenticated(true);
-    },
-    [],
-  );
+  const login = useCallback(async (password: string) => {
+    await api.login(password);
+    setAuthenticated(true);
+  }, []);
 
   const logout = useCallback(async () => {
     await api.logout();
