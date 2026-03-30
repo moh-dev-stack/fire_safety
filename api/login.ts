@@ -1,5 +1,5 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
-import { createSessionToken, setSessionCookie } from "./lib/session";
+import { createSessionToken, setSessionCookie } from "./lib/session.js";
 
 /** Fixed POC gate — not overridable via env; only this value is accepted. */
 const LOGIN_PASSWORD = "1234";

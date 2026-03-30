@@ -2,10 +2,10 @@ import type { VercelRequest, VercelResponse } from "@vercel/node";
 import {
   formatIncidentExportFilename,
   rowsToCsv,
-} from "../../src/model/incident";
-import { isAuthenticated } from "../lib/auth";
-import { getSql } from "../lib/neon";
-import { mapRow } from "../lib/incident-map";
+} from "../../src/model/incident.js";
+import { isAuthenticated } from "../lib/auth.js";
+import { getSql } from "../lib/neon.js";
+import { mapRow } from "../lib/incident-map.js";
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== "GET") {

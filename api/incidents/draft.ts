@@ -1,9 +1,9 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 import { createHash } from "node:crypto";
-import { isAuthenticated } from "../lib/auth";
-import { getSql } from "../lib/neon";
-import { getCookie, SESSION_COOKIE } from "../lib/session";
-import { parseStoredIncidentDraft } from "../../src/model/incident";
+import { isAuthenticated } from "../lib/auth.js";
+import { getSql } from "../lib/neon.js";
+import { getCookie, SESSION_COOKIE } from "../lib/session.js";
+import { parseStoredIncidentDraft } from "../../src/model/incident.js";
 
 function sessionDraftKey(cookieHeader: string | undefined): string | null {
   const token = getCookie(cookieHeader, SESSION_COOKIE);

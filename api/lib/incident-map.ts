@@ -4,7 +4,7 @@ import {
   SEVERITY_LEVELS,
   type IncidentRow,
   type IncidentTypeCode,
-} from "../../src/model/incident";
+} from "../../src/model/incident.js";
 
 function parseImageUrls(v: unknown): string[] {
   if (Array.isArray(v)) {

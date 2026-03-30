@@ -1,9 +1,9 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 import { ZodError } from "zod";
-import { incidentCreateSchema } from "../src/model/incident";
-import { isAuthenticated } from "./lib/auth";
-import { mapRow } from "./lib/incident-map";
-import { getSql } from "./lib/neon";
+import { incidentCreateSchema } from "../src/model/incident.js";
+import { isAuthenticated } from "./lib/auth.js";
+import { mapRow } from "./lib/incident-map.js";
+import { getSql } from "./lib/neon.js";
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (!(await isAuthenticated(req))) {
