@@ -28,7 +28,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     if (msg.includes("SESSION_SECRET")) {
       res.status(500).json({
         error:
-          "Server misconfigured: set SESSION_SECRET (16+ chars) in .env.local. See .env.example.",
+          "Server misconfigured: set SESSION_SECRET (min 16 random characters). Locally: .env.local. On Vercel: Project → Settings → Environment Variables, then redeploy.",
       });
       return;
     }
