@@ -212,9 +212,8 @@ describe("ReportIncidentPage", () => {
       "Smoke near catering tent.",
     );
     await user.type(screen.getByLabelText(/Actions taken/i), "Area cleared.");
+    await user.upload(screen.getByLabelText(/Add photos/i), file);
     await user.type(screen.getByLabelText(/^Your name/i), "Sam Duty");
-
-    await user.upload(screen.getByLabelText(/Photos \(optional\)/i), file);
 
     await user.click(screen.getByRole("button", { name: /Submit fire/ }));
 

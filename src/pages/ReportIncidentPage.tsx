@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { ZodError } from "zod";
 import {
@@ -39,6 +39,7 @@ export function ReportIncidentPage() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+  const successRef = useRef<HTMLParagraphElement>(null);
 
   const photoSlotsLeft =
     INCIDENT_IMAGE_URL_MAX - form.image_urls.length - pendingFiles.length;
@@ -84,6 +85,14 @@ export function ReportIncidentPage() {
     const t = window.setTimeout(() => setDraftNotice(null), 9000);
     return () => window.clearTimeout(t);
   }, [draftNotice]);
+
+  useEffect(() => {
+    if (!success) return;
+    const el = successRef.current;
+    if (el && typeof el.scrollIntoView === "function") {
+      el.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    }
+  }, [success]);
 
   useEffect(() => {
     if (!hydrated) return;
@@ -190,11 +199,6 @@ export function ReportIncidentPage() {
             ))}
           </ul>
         </div>
-      ) : null}
-      {success ? (
-        <p className="rounded-lg bg-emerald-50 px-4 py-3 text-sm text-emerald-900">
-          {success}
-        </p>
       ) : null}
 
       <section className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
@@ -351,26 +355,11 @@ export function ReportIncidentPage() {
               className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-base"
             />
           </div>
-          <div>
-            <label htmlFor="reporter_name" className="block text-sm font-medium text-slate-700">
-              Your name <span className="text-red-700">*</span>
-            </label>
-            <input
-              id="reporter_name"
-              required
-              value={form.reporter_name}
-              onChange={(e) =>
-                setForm((f) => ({ ...f, reporter_name: e.target.value }))
-              }
-              className="mt-1 w-full min-h-11 rounded-lg border border-slate-300 px-3 py-2 text-base"
-            />
-          </div>
-          <div className="rounded-lg border border-dashed border-slate-300 bg-slate-50/80 p-4">
-            <label htmlFor="incident_photos" className="block text-sm font-medium text-slate-700">
-              Photos (optional)
-            </label>
+
+          <div className="rounded-lg border-2 border-dashed border-slate-300 bg-slate-50/80 p-4 ring-1 ring-slate-100">
+            <p className="text-sm font-semibold text-slate-900">Photos (optional)</p>
             <p className="mt-1 text-xs text-slate-600">
-              Up to {INCIDENT_IMAGE_URL_MAX} images total (JPEG, PNG, WebP, HEIC).{" "}
+              Up to {INCIDENT_IMAGE_URL_MAX} images (camera or gallery).{" "}
               {photoSlotsLeft > 0
                 ? `${photoSlotsLeft} slot(s) left.`
                 : "Remove a photo to add another."}
@@ -378,7 +367,7 @@ export function ReportIncidentPage() {
             <input
               id="incident_photos"
               type="file"
-              accept="image/jpeg,image/png,image/webp,image/heic,image/heif,.heic,.heif"
+              accept="image/*"
               multiple
               disabled={photoSlotsLeft <= 0}
               onChange={(e) => {
@@ -394,8 +383,18 @@ export function ReportIncidentPage() {
                 }
                 e.target.value = "";
               }}
-              className="mt-2 block w-full text-sm text-slate-700 file:mr-3 file:rounded-md file:border file:border-slate-300 file:bg-white file:px-3 file:py-2 file:text-sm file:font-medium file:text-slate-900 hover:file:bg-slate-50 disabled:opacity-50"
+              className="sr-only"
             />
+            <label
+              htmlFor="incident_photos"
+              className={`mt-3 flex min-h-12 cursor-pointer items-center justify-center rounded-lg border-2 border-slate-300 bg-white px-4 py-3 text-center text-base font-semibold text-slate-900 shadow-sm transition hover:border-red-800 hover:bg-red-50 ${
+                photoSlotsLeft <= 0
+                  ? "pointer-events-none cursor-not-allowed opacity-50"
+                  : ""
+              }`}
+            >
+              Add photos (tap to choose or take a picture)
+            </label>
             {form.image_urls.length > 0 ? (
               <ul className="mt-3 space-y-2 text-sm">
                 {form.image_urls.map((url, i) => (
@@ -446,6 +445,21 @@ export function ReportIncidentPage() {
               </ul>
             ) : null}
           </div>
+
+          <div>
+            <label htmlFor="reporter_name" className="block text-sm font-medium text-slate-700">
+              Your name <span className="text-red-700">*</span>
+            </label>
+            <input
+              id="reporter_name"
+              required
+              value={form.reporter_name}
+              onChange={(e) =>
+                setForm((f) => ({ ...f, reporter_name: e.target.value }))
+              }
+              className="mt-1 w-full min-h-11 rounded-lg border border-slate-300 px-3 py-2 text-base"
+            />
+          </div>
           <button
             type="submit"
             disabled={saving}
@@ -453,6 +467,15 @@ export function ReportIncidentPage() {
           >
             {saving ? "Saving…" : "Submit fire & safety report"}
           </button>
+          {success ? (
+            <p
+              ref={successRef}
+              className="rounded-lg bg-emerald-50 px-4 py-3 text-sm text-emerald-900"
+              role="status"
+            >
+              {success}
+            </p>
+          ) : null}
         </form>
       </section>
     </div>
