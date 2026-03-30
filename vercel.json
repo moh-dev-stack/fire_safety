@@ -8,11 +8,5 @@
       "includeFiles": "src/model/**"
     }
   },
-  "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }],
-  "crons": [
-    {
-      "path": "/api/cron/snapshot-incidents",
-      "schedule": "0 */6 * * *"
-    }
-  ]
+  "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }]
 }

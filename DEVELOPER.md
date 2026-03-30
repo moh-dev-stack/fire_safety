@@ -19,7 +19,7 @@ Follow this order once per machine / environment:
    - `DATABASE_URL` — your Neon URL  
    - `AUTH_USERNAME` / `AUTH_PASSWORD` — shared login (e.g. `1234` / `1234` for testing only)  
    - `SESSION_SECRET` — random string, **at least 16 characters** (e.g. `openssl rand -hex 32`)
-4. **Optional: scheduled CSV snapshots** — For production on Vercel, add `CRON_SECRET` and `BLOB_READ_WRITE_TOKEN` in the Vercel project (see [Blob](https://vercel.com/docs/vercel-blob)); without them, the app works but `/api/cron/snapshot-incidents` returns 503.
+4. **Optional: Blob CSV snapshots** — For production on Vercel, add `CRON_SECRET` and `BLOB_READ_WRITE_TOKEN` (see [Blob](https://vercel.com/docs/vercel-blob)); without them, `/api/cron/snapshot-incidents` returns 503. There is **no** Vercel Cron in this repo—call the route manually, wire an external scheduler, or add a `crons` entry in `vercel.json` if you use **Pro**.
 5. **Run locally** — `npm run dev:all`, open **http://localhost:5173/**, sign in, create an incident, **Download incidents as CSV**. (Or `npx vercel dev` after `vercel login`.)
 6. **Deploy to Vercel** — Connect the repo, set the **same** variables in **Production** env. **Keep `DATABASE_URL` unchanged** across deploys so incident data is not “lost” (it lives in Neon, not in the deploy bundle).
 
@@ -71,7 +71,7 @@ npm run dev
 | `api/` | Vercel Serverless handlers (`login`, `logout`, `me`, `incidents`, `incidents/export`, `cron/snapshot-incidents`) |
 | `api/lib/` | DB (Neon), session cookie, auth helper, row mapping |
 | `sql/schema.sql` | Postgres DDL for `incidents` |
-| `vercel.json` | SPA rewrite, build output, **cron** schedule (every 6 hours) |
+| `vercel.json` | SPA rewrite, build output |
 
 ## Environment variables
 
@@ -127,7 +127,7 @@ To add a field: update Zod schema, `sql/schema.sql` (migration), `mapRow` in `ap
 2. Framework preset: **Vite** (or use existing `vercel.json` `buildCommand` / `outputDirectory`).
 3. Set all environment variables for **Production**.
 4. After first deploy, run `sql/schema.sql` against the **production** database if the table is missing.
-5. Cron: `vercel.json` schedules `/api/cron/snapshot-incidents` every **6 hours**. Ensure `CRON_SECRET` and `BLOB_READ_WRITE_TOKEN` are set if you want Blob backups.
+5. **Snapshots (optional):** If you use Blob backups, set `CRON_SECRET` and `BLOB_READ_WRITE_TOKEN`. Nothing runs on a schedule unless you trigger `GET /api/cron/snapshot-incidents` yourself or add Vercel Cron / another job (see step 4).
 6. Smoke-test **login**, **submit incident**, **download CSV**, and **map** on a phone.
 
 Cookies use **`Secure`** in production (`VERCEL=1` or `NODE_ENV=production`).
