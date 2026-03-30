@@ -1,4 +1,5 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
+import { expectedLoginPassword } from "./lib/expected-login-password";
 import { createSessionToken, setSessionCookie } from "./lib/session";
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
@@ -12,10 +13,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       typeof req.body === "string" ? JSON.parse(req.body) : req.body;
     const password = String(body?.password ?? "").trim();
 
-    // Defaults match project convention; override with AUTH_PASSWORD in env (e.g. Vercel).
-    const okPass = process.env.AUTH_PASSWORD?.trim() || "1234";
-
-    if (password !== okPass) {
+    if (password !== expectedLoginPassword()) {
       res.status(401).json({ error: "Invalid password" });
       return;
     }
