@@ -5,7 +5,9 @@ import { ProtectedRoute } from "./components/ProtectedRoute";
 import { IncidentLogPage } from "./pages/IncidentLogPage";
 import { ReportIncidentPage } from "./pages/ReportIncidentPage";
 import { LoginPage } from "./pages/LoginPage";
+import { HelpPage } from "./pages/HelpPage";
 import { MapPage } from "./pages/MapPage";
+import { RolesPage } from "./pages/RolesPage";
 import { RotaPage } from "./pages/RotaPage";
 import { TeamPage } from "./pages/TeamPage";
 
@@ -26,6 +28,8 @@ export default function App() {
           <Route path="incidents" element={<ReportIncidentPage />} />
           <Route path="incidents/log" element={<IncidentLogPage />} />
           <Route path="map" element={<MapPage />} />
+          <Route path="help" element={<HelpPage />} />
+          <Route path="roles" element={<RolesPage />} />
         </Route>
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>

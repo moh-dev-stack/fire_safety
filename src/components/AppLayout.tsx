@@ -8,6 +8,8 @@ const nav = [
   { to: "/incidents", label: "Report" },
   { to: "/incidents/log", label: "Log" },
   { to: "/map", label: "Map" },
+  { to: "/help", label: "Help" },
+  { to: "/roles", label: "Roles" },
 ];
 
 const linkClass = ({ isActive }: { isActive: boolean }) =>
