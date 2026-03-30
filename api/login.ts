@@ -1,6 +1,8 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
-import { expectedLoginPassword } from "./lib/expected-login-password";
 import { createSessionToken, setSessionCookie } from "./lib/session";
+
+/** Fixed POC gate — not overridable via env; only this value is accepted. */
+const LOGIN_PASSWORD = "1234";
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== "POST") {
@@ -13,7 +15,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       typeof req.body === "string" ? JSON.parse(req.body) : req.body;
     const password = String(body?.password ?? "").trim();
 
-    if (password !== expectedLoginPassword()) {
+    if (password !== LOGIN_PASSWORD) {
       res.status(401).json({ error: "Invalid password" });
       return;
     }

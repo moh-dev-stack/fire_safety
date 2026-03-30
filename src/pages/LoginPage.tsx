@@ -36,8 +36,8 @@ export function LoginPage() {
           Fire &amp; Safety — Jalsa 2026
         </h1>
         <p className="mt-2 text-sm text-slate-600">
-          Sign in with the team password (24–26 July 2026). Unless your environment
-          overrides it, use <strong>1234</strong>.
+          Sign in with the team password (24–26 July 2026). Password is{" "}
+          <strong>1234</strong>.
         </p>
         <form onSubmit={(e) => void onSubmit(e)} className="mt-8 space-y-4">
           <div>

@@ -17,8 +17,8 @@ Follow this order once per machine / environment:
    Or paste [`sql/schema.sql`](sql/schema.sql) into Neon **SQL Editor**, or use `psql "$DATABASE_URL" -f sql/schema.sql`.
 3. **Local env file** — `cp .env.example .env.local` and set at minimum:
    - `DATABASE_URL` — your Neon URL  
-   - `AUTH_USERNAME` / `AUTH_PASSWORD` — shared login (e.g. `1234` / `1234` for testing only)  
-   - `SESSION_SECRET` — random string, **at least 16 characters** (e.g. `openssl rand -hex 32`)
+   - `SESSION_SECRET` — random string, **at least 16 characters** (e.g. `openssl rand -hex 32`)  
+   Login uses a **fixed** password **`1234`** in [`api/login.ts`](api/login.ts) (POC only; not env-configurable).
 4. **Optional: Blob CSV snapshots** — For production on Vercel, add `CRON_SECRET` and `BLOB_READ_WRITE_TOKEN` (see [Blob](https://vercel.com/docs/vercel-blob)); without them, `/api/cron/snapshot-incidents` returns 503. There is **no** Vercel Cron in this repo—call the route manually, wire an external scheduler, or add a `crons` entry in `vercel.json` if you use **Pro**.
 5. **Run locally** — `npm run dev:all`, open **http://localhost:5173/**, sign in, create an incident, **Download incidents as CSV**. (Or `npx vercel dev` after `vercel login`.)
 6. **Deploy to Vercel** — Connect the repo, set the **same** variables in **Production** env. **Keep `DATABASE_URL` unchanged** across deploys so incident data is not “lost” (it lives in Neon, not in the deploy bundle).
@@ -30,7 +30,7 @@ git clone <repo>
 cd fire_saftey_poc
 npm install
 cp .env.example .env.local
-# Edit .env.local: DATABASE_URL, AUTH_*, SESSION_SECRET, optionally CRON_SECRET + BLOB_READ_WRITE_TOKEN
+# Edit .env.local: DATABASE_URL, SESSION_SECRET, optionally CRON_SECRET + BLOB_READ_WRITE_TOKEN
 ```
 
 Apply the database schema **once** against your Neon database (SQL console or `psql`):
@@ -46,7 +46,7 @@ cat sql/schema.sql
 npm run dev:all
 ```
 
-Open **http://localhost:5173/** and sign in with **1234** / **1234** (unless you changed `AUTH_*` in `.env.local`). Ensure `.env.local` includes a strong **`SESSION_SECRET`** (16+ characters).
+Open **http://localhost:5173/** and sign in with password **1234**. Ensure `.env.local` includes a strong **`SESSION_SECRET`** (16+ characters).
 
 **Alternative — Vercel dev** (after `vercel login`):
 
@@ -78,8 +78,6 @@ npm run dev
 | Variable | Required | Description |
 |----------|----------|-------------|
 | `DATABASE_URL` | Yes | Neon Postgres connection string (production must stay **stable** across deploys so data is not “lost”) |
-| `AUTH_USERNAME` | Optional | Defaults to **`1234`** if unset or empty |
-| `AUTH_PASSWORD` | Optional | Defaults to **`1234`** if unset or empty |
 | `SESSION_SECRET` | Yes | Min 16 chars; signs the HTTP-only session cookie (`jose` HS256) |
 | `CRON_SECRET` | For secured cron | Vercel sends `Authorization: Bearer <CRON_SECRET>` when this is set in the project |
 | `BLOB_READ_WRITE_TOKEN` | For snapshots | Vercel Blob read/write token; without it, cron snapshot returns 503 |
@@ -88,7 +86,7 @@ In the Vercel dashboard, set these for **Production** (and optionally **Preview*
 
 ## Authentication
 
-- `POST /api/login` with JSON `{ "username", "password" }` sets an **HttpOnly** cookie `jalsa_session`.
+- `POST /api/login` with JSON `{ "password": "1234" }` sets an **HttpOnly** cookie `jalsa_session` (password is **fixed in code** for this POC).
 - `POST /api/logout` clears it.
 - `GET /api/me` returns 200 if the cookie is valid.
 - Incident routes require a valid session.
@@ -97,7 +95,7 @@ In the Vercel dashboard, set these for **Production** (and optionally **Preview*
 
 | Method | Path | Auth | Description |
 |--------|------|------|-------------|
-| POST | `/api/login` | No | Body: `{ username, password }` |
+| POST | `/api/login` | No | Body: `{ password }` — only **`1234`** is accepted |
 | POST | `/api/logout` | No | Clears session |
 | GET | `/api/me` | Session | Session check |
 | GET | `/api/incidents` | Session | List incidents, newest first |

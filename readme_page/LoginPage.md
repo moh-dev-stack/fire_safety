@@ -13,16 +13,15 @@ Sign in before accessing team home, rota, incidents, and map.
 
 | Control | Behaviour |
 |---------|-----------|
-| **Username** | Text input, `autoComplete="username"`, required on submit. |
 | **Password** | Password input, `autoComplete="current-password"`, required. |
 | **Sign in** | Primary button; disabled while request in flight; label becomes “Signing in…”. |
 | **Error region** | `role="alert"`; shows message from failed `login()` or generic “Login failed”. |
 
 ## Defaults and copy (POC)
 
-- Initial **username** and **password** state are both **`1234`** (easy demo; change in code if you want blanks or env-driven hints).
+- Initial **password** field state is **`1234`** (matches the fixed password checked in **`api/login.ts`** — not configurable via env).
 - Page title line: **Fire & Safety — Jalsa 2026**.
-- Body copy references **24–26 July 2026** and states that unless env overrides, credentials are **1234** (keep copy aligned with `JALSA_DAYS` in `src/model/incident.ts` if dates diverge).
+- Body copy references **24–26 July 2026** and states the password is **1234** (keep copy aligned with `JALSA_DAYS` in `src/model/incident.ts` if dates diverge).
 
 ## Post-login navigation
 
@@ -32,6 +31,6 @@ Sign in before accessing team home, rota, incidents, and map.
 ## POC limitations & likely adjustments
 
 - Replace with real identity (SSO, MFA, password policies, account recovery).
-- Remove hard-coded defaults for production builds; consider separate “demo” vs “prod” builds.
+- Replace the fixed **`1234`** gate in **`api/login.ts`** for production; consider separate “demo” vs “prod” builds.
 - Rate limiting and audit logging belong on the server, not in this doc’s scope — but plan for them.
-- **When you change login UX or env-based credentials**, update this file and the main [README.md](./README.md) “keeping this guide up to date” section if needed.
+- **When you change login UX or server password logic**, update this file and the main [README.md](../README.md) if needed.
