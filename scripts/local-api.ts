@@ -56,6 +56,11 @@ app.post("/api/incidents", (req, res) => {
     m.default(vReq(req), vRes(res)),
   );
 });
+app.post("/api/incidents/blob-upload", (req, res) => {
+  void import("../api/incidents/blob-upload.ts").then((m) =>
+    m.default(vReq(req), vRes(res)),
+  );
+});
 
 app.get("/api/cron/snapshot-incidents", (req, res) => {
   void import("../api/cron/snapshot-incidents.ts").then((m) =>

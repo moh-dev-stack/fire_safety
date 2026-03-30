@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { ZodError } from "zod";
 import {
+  INCIDENT_IMAGE_URL_MAX,
   INCIDENT_TIME_SLOTS,
   INCIDENT_TYPE_CODES,
   INCIDENT_TYPE_LABELS,
@@ -20,6 +21,7 @@ import {
   createIncident,
   fetchIncidentDraft,
   saveIncidentDraft,
+  uploadIncidentImages,
 } from "../lib/api";
 import {
   clearLocalIncidentDraft,
@@ -30,11 +32,16 @@ import { formatFlattenedZodError } from "../lib/format-validation";
 
 export function ReportIncidentPage() {
   const [form, setForm] = useState<IncidentDraft>(() => emptyIncidentDraft());
+  /** Selected files not yet uploaded (not stored in draft). */
+  const [pendingFiles, setPendingFiles] = useState<File[]>([]);
   const [hydrated, setHydrated] = useState(false);
   const [draftNotice, setDraftNotice] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+
+  const photoSlotsLeft =
+    INCIDENT_IMAGE_URL_MAX - form.image_urls.length - pendingFiles.length;
 
   useEffect(() => {
     let cancelled = false;
@@ -99,6 +106,12 @@ export function ReportIncidentPage() {
     setSuccess(null);
 
     try {
+      let image_urls = [...form.image_urls];
+      if (pendingFiles.length > 0) {
+        const uploaded = await uploadIncidentImages(pendingFiles);
+        image_urls = [...image_urls, ...uploaded];
+      }
+
       const payload = incidentCreateSchema.parse({
         incident_date: form.incident_date,
         incident_time: form.incident_time,
@@ -108,12 +121,14 @@ export function ReportIncidentPage() {
         description: form.description.trim(),
         actions_taken: form.actions_taken.trim(),
         reporter_name: form.reporter_name,
+        image_urls,
       });
 
       await createIncident(payload);
       clearLocalIncidentDraft();
       void clearIncidentDraft().catch(() => {});
       setForm(emptyIncidentDraft());
+      setPendingFiles([]);
       setSuccess("Incident reported. It appears under Incident log.");
     } catch (err) {
       if (err instanceof ZodError) {
@@ -140,8 +155,10 @@ export function ReportIncidentPage() {
           <p className="mt-1 text-slate-600">
             Use this duty form for alarms, evacuations, medical events, hazards, and
             crowd-safety issues on site. Date, time, location, category, severity, description,
-            actions, and your name are required. While you type, your draft is saved to this
-            device and to the database (when signed in).
+            actions, and your name are required. You can add up to {INCIDENT_IMAGE_URL_MAX} optional
+            photos (stored on Vercel Blob). While you type, your draft is saved to this device and
+            to the database (when signed in); new file picks are kept in the browser until you
+            submit.
           </p>
         </div>
         <Link
@@ -347,6 +364,87 @@ export function ReportIncidentPage() {
               }
               className="mt-1 w-full min-h-11 rounded-lg border border-slate-300 px-3 py-2 text-base"
             />
+          </div>
+          <div className="rounded-lg border border-dashed border-slate-300 bg-slate-50/80 p-4">
+            <label htmlFor="incident_photos" className="block text-sm font-medium text-slate-700">
+              Photos (optional)
+            </label>
+            <p className="mt-1 text-xs text-slate-600">
+              Up to {INCIDENT_IMAGE_URL_MAX} images total (JPEG, PNG, WebP, HEIC).{" "}
+              {photoSlotsLeft > 0
+                ? `${photoSlotsLeft} slot(s) left.`
+                : "Remove a photo to add another."}
+            </p>
+            <input
+              id="incident_photos"
+              type="file"
+              accept="image/jpeg,image/png,image/webp,image/heic,image/heif,.heic,.heif"
+              multiple
+              disabled={photoSlotsLeft <= 0}
+              onChange={(e) => {
+                const picked = Array.from(e.target.files ?? []);
+                const room = Math.max(
+                  0,
+                  INCIDENT_IMAGE_URL_MAX -
+                    form.image_urls.length -
+                    pendingFiles.length,
+                );
+                if (room > 0 && picked.length > 0) {
+                  setPendingFiles((prev) => [...prev, ...picked.slice(0, room)]);
+                }
+                e.target.value = "";
+              }}
+              className="mt-2 block w-full text-sm text-slate-700 file:mr-3 file:rounded-md file:border file:border-slate-300 file:bg-white file:px-3 file:py-2 file:text-sm file:font-medium file:text-slate-900 hover:file:bg-slate-50 disabled:opacity-50"
+            />
+            {form.image_urls.length > 0 ? (
+              <ul className="mt-3 space-y-2 text-sm">
+                {form.image_urls.map((url, i) => (
+                  <li
+                    key={`${url}-${i}`}
+                    className="flex flex-wrap items-center justify-between gap-2 rounded-md bg-white px-3 py-2 ring-1 ring-slate-200"
+                  >
+                    <span className="truncate font-mono text-xs text-slate-600" title={url}>
+                      Uploaded {i + 1}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setForm((f) => ({
+                          ...f,
+                          image_urls: f.image_urls.filter((_, j) => j !== i),
+                        }))
+                      }
+                      className="shrink-0 text-sm font-medium text-red-800 underline"
+                    >
+                      Remove
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            ) : null}
+            {pendingFiles.length > 0 ? (
+              <ul className="mt-2 space-y-2 text-sm">
+                {pendingFiles.map((file, i) => (
+                  <li
+                    key={`${file.name}-${i}-${file.size}`}
+                    className="flex flex-wrap items-center justify-between gap-2 rounded-md bg-white px-3 py-2 ring-1 ring-amber-200"
+                  >
+                    <span className="truncate text-slate-800" title={file.name}>
+                      Pending: {file.name}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setPendingFiles((prev) => prev.filter((_, j) => j !== i))
+                      }
+                      className="shrink-0 text-sm font-medium text-red-800 underline"
+                    >
+                      Remove
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            ) : null}
           </div>
           <button
             type="submit"

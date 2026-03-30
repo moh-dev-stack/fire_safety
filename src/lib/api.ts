@@ -1,4 +1,9 @@
-import type { IncidentCreate, IncidentDraft } from "../model/incident";
+import { upload } from "@vercel/blob/client";
+import {
+  INCIDENT_IMAGE_URL_MAX,
+  type IncidentCreate,
+  type IncidentDraft,
+} from "../model/incident";
 
 export type FetchIncidentDraftResult = {
   draft: IncidentDraft | null;
@@ -83,6 +88,32 @@ export async function saveIncidentDraft(draft: IncidentDraft): Promise<void> {
 export async function clearIncidentDraft(): Promise<void> {
   const res = await apiFetch("/api/incidents/draft", { method: "DELETE" });
   if (!res.ok) throw new Error("Failed to clear draft");
+}
+
+function safeImageFilename(name: string): string {
+  const base = name.replace(/[^a-zA-Z0-9._-]/g, "_").slice(0, 100);
+  return base.length > 0 ? base : "photo";
+}
+
+/**
+ * Upload image files to Vercel Blob (client-side upload with session cookie).
+ * Returns public HTTPS URLs in order. Requires `BLOB_READ_WRITE_TOKEN` on the server.
+ */
+export async function uploadIncidentImages(files: File[]): Promise<string[]> {
+  if (files.length > INCIDENT_IMAGE_URL_MAX) {
+    throw new Error(`At most ${INCIDENT_IMAGE_URL_MAX} photos per report`);
+  }
+  const urls: string[] = [];
+  for (const file of files) {
+    const pathname = `incidents/photos/${crypto.randomUUID()}-${safeImageFilename(file.name)}`;
+    const result = await upload(pathname, file, {
+      access: "public",
+      handleUploadUrl: "/api/incidents/blob-upload",
+      contentType: file.type || undefined,
+    });
+    urls.push(result.url);
+  }
+  return urls;
 }
 
 export async function createIncident(body: IncidentCreate) {

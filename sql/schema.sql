@@ -16,6 +16,10 @@ CREATE TABLE IF NOT EXISTS incidents (
 
 CREATE INDEX IF NOT EXISTS incidents_created_at_idx ON incidents (created_at DESC);
 
+-- DBs created before photo support: add column without recreating the table.
+ALTER TABLE incidents
+  ADD COLUMN IF NOT EXISTS image_urls JSONB NOT NULL DEFAULT '[]'::jsonb;
+
 -- In-progress incident form (per signed-in session). Submitted rows still live in `incidents`.
 CREATE TABLE IF NOT EXISTS incident_report_drafts (
   session_key TEXT PRIMARY KEY,

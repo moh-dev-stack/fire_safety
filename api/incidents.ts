@@ -36,12 +36,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         typeof req.body === "string" ? JSON.parse(req.body) : req.body;
       const data = incidentCreateSchema.parse(raw);
       const sql = getSql();
+      const imageUrlsJson = JSON.stringify(data.image_urls);
       const inserted = await sql.query(
         `INSERT INTO incidents (
           incident_date, incident_time, incident_type, severity,
           location, description, actions_taken, reporter_name, reporter_contact,
           image_urls
-        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, '[]'::jsonb)
+        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10::jsonb)
         RETURNING id, created_at, incident_date::text AS incident_date, incident_time,
                   incident_type, severity, location, description, actions_taken,
                   reporter_name, reporter_contact, image_urls`,
@@ -55,6 +56,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           data.actions_taken,
           data.reporter_name,
           null,
+          imageUrlsJson,
         ],
       );
       const row = (inserted as Record<string, unknown>[])[0];

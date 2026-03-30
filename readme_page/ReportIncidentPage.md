@@ -3,7 +3,7 @@
 **Route:** `/incidents` (protected)  
 **Source:** `src/pages/ReportIncidentPage.tsx`  
 **Model / dropdown definitions:** `src/model/incident.ts`  
-**API:** `src/lib/api.ts` — `fetchIncidentDraft`, `saveIncidentDraft`, `clearIncidentDraft`, `createIncident`  
+**API:** `src/lib/api.ts` — `fetchIncidentDraft`, `saveIncidentDraft`, `clearIncidentDraft`, `uploadIncidentImages`, `createIncident`  
 **Local draft:** `src/lib/incident-draft-local.ts`  
 **Validation:** Zod — `incidentCreateSchema`; user-facing errors via `formatFlattenedZodError`
 
@@ -40,9 +40,10 @@ All required unless noted. Select options come from `incident.ts` — **if you a
 | 6 | What happened | `<textarea>` | Required; max **8000** chars; placeholder guides factual wording. |
 | 7 | Actions taken | `<textarea>` | Required; max **8000** chars. |
 | 8 | Your name | `<input>` text | Required; trimmed; max **200** chars. |
+| 9 | Photos (optional) | `<input type="file" multiple>` | Accepts JPEG, PNG, WebP, HEIC/HEIF; up to **`INCIDENT_IMAGE_URL_MAX` (8)** total across uploaded URLs + pending files. **Uploaded** URLs live in draft (`image_urls`); **pending** `File`s only in memory until submit. On submit, files upload via `@vercel/blob/client` → `uploadIncidentImages` (handshake `POST /api/incidents/blob-upload`) then `createIncident` sends HTTPS Blob URLs. |
 | **Submit** | Button | **“Submit fire & safety report”** / “Saving…” when busy; disabled while saving. |
 
-**Not in form (POC):** `reporter_contact` is not collected here (may exist on stored rows from API). `image_urls` disabled per schema comments.
+**Not collected:** `reporter_contact` (may exist on stored rows from API).
 
 ## Draft autosave
 

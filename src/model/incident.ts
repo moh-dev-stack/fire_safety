@@ -96,6 +96,28 @@ const reporterNameRequired = z
   .min(1, "Enter your name")
   .max(200);
 
+/** Max photos per incident report (DB + UI). */
+export const INCIDENT_IMAGE_URL_MAX = 8;
+
+const imageUrlSchema = z
+  .string()
+  .trim()
+  .min(1)
+  .max(2048)
+  .refine((s) => {
+    try {
+      const u = new URL(s);
+      if (u.protocol !== "https:") return false;
+      const host = u.hostname.toLowerCase();
+      return (
+        host.endsWith(".public.blob.vercel-storage.com") ||
+        host === "public.blob.vercel-storage.com"
+      );
+    } catch {
+      return false;
+    }
+  }, "Each image must be a valid HTTPS URL from Vercel Blob storage");
+
 const incidentFieldsBase = {
   incident_date: jalsaDaySchema,
   incident_time: z
@@ -125,8 +147,14 @@ const incidentFieldsBase = {
 
 export const incidentFieldsSchema = z.object(incidentFieldsBase);
 
-/** Payload for creating an incident (no attachments — images disabled for now). */
-export const incidentCreateSchema = incidentFieldsSchema;
+/** Payload for creating an incident (optional photos as Blob HTTPS URLs). */
+export const incidentCreateSchema = incidentFieldsSchema.extend({
+  image_urls: z
+    .array(imageUrlSchema)
+    .max(INCIDENT_IMAGE_URL_MAX)
+    .optional()
+    .default([]),
+});
 
 export type IncidentCreate = z.infer<typeof incidentCreateSchema>;
 
@@ -142,6 +170,8 @@ export type IncidentDraft = {
   description: string;
   actions_taken: string;
   reporter_name: string;
+  /** Already-uploaded Blob URLs; pending local `File`s stay in component state only. */
+  image_urls: string[];
 };
 
 export function emptyIncidentDraft(): IncidentDraft {
@@ -154,6 +184,7 @@ export function emptyIncidentDraft(): IncidentDraft {
     description: "",
     actions_taken: "",
     reporter_name: "",
+    image_urls: [],
   };
 }
 
@@ -167,6 +198,7 @@ export const incidentDraftStorageSchema = z.object({
   description: z.string().max(8000),
   actions_taken: z.string().max(8000),
   reporter_name: z.string().max(200),
+  image_urls: z.array(z.string().max(2048)).max(INCIDENT_IMAGE_URL_MAX).optional().default([]),
 });
 
 export function isIncidentDraftEmpty(d: IncidentDraft): boolean {
@@ -179,7 +211,8 @@ export function isIncidentDraftEmpty(d: IncidentDraft): boolean {
     d.location === e.location &&
     d.description === e.description &&
     d.actions_taken === e.actions_taken &&
-    d.reporter_name === e.reporter_name
+    d.reporter_name === e.reporter_name &&
+    d.image_urls.length === 0
   );
 }
 
@@ -197,6 +230,10 @@ export function parseStoredIncidentDraft(data: unknown): IncidentDraft | null {
     (SEVERITY_LEVELS as readonly string[]).includes(raw.severity)
       ? (raw.severity as (typeof SEVERITY_LEVELS)[number])
       : "";
+  const image_urls = (raw.image_urls ?? []).filter(
+    (x): x is string => typeof x === "string" && x.length > 0,
+  ).slice(0, INCIDENT_IMAGE_URL_MAX);
+
   return {
     incident_date: raw.incident_date,
     incident_time: raw.incident_time,
@@ -206,6 +243,7 @@ export function parseStoredIncidentDraft(data: unknown): IncidentDraft | null {
     description: raw.description,
     actions_taken: raw.actions_taken,
     reporter_name: raw.reporter_name,
+    image_urls,
   };
 }
 

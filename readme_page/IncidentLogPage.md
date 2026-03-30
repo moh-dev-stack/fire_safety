@@ -31,7 +31,7 @@ Shown inside a labelled region **“Filter incident log”**. Clearing filters r
 
 | Control | Type | What it filters |
 |---------|------|-----------------|
-| **Search** | `<input type="search">` | Case-insensitive substring across concatenated fields: id, type code + label, severity, location, description, actions, reporter name/contact, incident date/time. |
+| **Search** | `<input type="search">` | Case-insensitive substring across concatenated fields: id, type code + label, severity, location, description, actions, reporter name/contact, incident date/time, **and each `image_urls` string** (e.g. part of a Blob path). |
 | **Category** | `<select>` | `INCIDENT_TYPE_CODES`; option text is the **code** (e.g. `Fire`), not the long label. |
 | **Severity** | `<select>` | `SEVERITY_LEVELS` |
 | **On-site date** | `<select>` | `JALSA_DAYS`; option labels via `jalsaDaySelectLabel` |
@@ -54,12 +54,13 @@ Each row (`IncidentRow`) displays:
 | Description | `description` |
 | Actions | `actions_taken` if set |
 | Reporter | `reporter_name`, `reporter_contact` if either present |
+| **Photos** | If `r.image_urls.length > 0`: region **`aria-label`** `Incident #{id} photos`, heading “Photos”, grid of thumbnails. Each thumb is a **button** (`aria-label` e.g. `Enlarge Incident #… photo N`); helper text “Click photo to enlarge”. **Lightbox:** full-screen `role="dialog"`, **Back to log** closes; **click backdrop** or **Esc** also closes; footer text + **Open in new tab** link. Broken thumbnails: “Try enlarged view” + “Open in new tab”. |
 
 **List key:** `r.id`.
 
 ## CSV export
 
-- Triggered only from the button; column set is `INCIDENT_CSV_COLUMNS` in `incident.ts` (includes `image_urls` JSON in CSV helper — behaviour depends on `api.downloadIncidentsCsv` implementation).
+- Triggered only from the button; column set is `INCIDENT_CSV_COLUMNS` in `incident.ts`. The **`image_urls`** column is a **JSON-encoded array** of HTTPS strings in each CSV row (same as DB), so exports and optional Blob snapshot CSVs retain photo links.
 
 ## POC limitations & likely adjustments
 

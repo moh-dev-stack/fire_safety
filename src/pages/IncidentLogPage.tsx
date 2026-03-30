@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState, type ReactNode } from "react";
 import { Link } from "react-router-dom";
 import {
   INCIDENT_TYPE_CODES,
@@ -27,10 +27,135 @@ function rowMatchesSearch(row: IncidentRow, q: string): boolean {
     row.reporter_contact ?? "",
     row.incident_date ?? "",
     row.incident_time ?? "",
+    row.image_urls.join(" "),
   ]
     .join(" ")
     .toLowerCase();
   return hay.includes(needle);
+}
+
+function IncidentPhotoLightbox({
+  url,
+  alt,
+  onClose,
+}: {
+  url: string;
+  alt: string;
+  onClose: () => void;
+}) {
+  useEffect(() => {
+    function onKey(e: KeyboardEvent) {
+      if (e.key === "Escape") onClose();
+    }
+    document.addEventListener("keydown", onKey);
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.removeEventListener("keydown", onKey);
+      document.body.style.overflow = prevOverflow;
+    };
+  }, [onClose]);
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4 sm:p-6"
+      role="dialog"
+      aria-modal="true"
+      aria-label={alt}
+      onClick={onClose}
+    >
+      <div
+        className="flex max-h-full w-full max-w-5xl flex-col items-stretch gap-3"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="flex shrink-0 justify-end">
+          <button
+            type="button"
+            onClick={onClose}
+            className="min-h-11 rounded-lg bg-white px-4 py-2 text-sm font-semibold text-slate-900 shadow-md ring-1 ring-slate-200 hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-black/50"
+          >
+            Back to log
+          </button>
+        </div>
+        <div className="flex min-h-0 flex-1 items-center justify-center overflow-hidden rounded-lg bg-black/40 p-2 ring-1 ring-white/20">
+          <img
+            src={url}
+            alt={alt}
+            className="max-h-[min(85vh,100%)] max-w-full object-contain"
+          />
+        </div>
+        <p className="shrink-0 text-center text-xs text-white/90">
+          Click outside the photo or press Esc to close.{" "}
+          <a
+            href={url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="font-medium text-white underline decoration-white/80 underline-offset-2 hover:decoration-white"
+          >
+            Open in new tab
+          </a>
+        </p>
+      </div>
+    </div>
+  );
+}
+
+function IncidentPhotoThumb({
+  url,
+  incidentId,
+  index,
+  onOpen,
+}: {
+  url: string;
+  incidentId: number;
+  index: number;
+  onOpen: () => void;
+}): ReactNode {
+  const [broken, setBroken] = useState(false);
+  const label = `Incident #${incidentId} photo ${index + 1}`;
+
+  if (broken) {
+    return (
+      <div className="rounded-md border border-amber-200 bg-amber-50/80 px-2 py-2 text-xs text-amber-950">
+        <p>Preview unavailable.</p>
+        <button
+          type="button"
+          onClick={onOpen}
+          className="mt-2 text-left font-medium text-red-900 underline"
+        >
+          Try enlarged view
+        </button>
+        <a
+          href={url}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="mt-1 block font-medium text-red-900 underline"
+        >
+          Open in new tab
+        </a>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex min-w-0 flex-col gap-1">
+      <button
+        type="button"
+        onClick={onOpen}
+        className="group block w-full overflow-hidden rounded-lg border border-slate-200 bg-slate-50 text-left shadow-sm transition hover:border-red-900/30 hover:shadow focus:outline-none focus-visible:ring-2 focus-visible:ring-red-900 focus-visible:ring-offset-2"
+        aria-label={`Enlarge ${label}`}
+      >
+        <img
+          src={url}
+          alt=""
+          loading="lazy"
+          className="max-h-32 w-full object-contain transition group-hover:opacity-95"
+          onError={() => setBroken(true)}
+        />
+      </button>
+      <p className="text-xs text-slate-500">Click photo to enlarge</p>
+    </div>
+  );
 }
 
 export function IncidentLogPage() {
@@ -38,6 +163,10 @@ export function IncidentLogPage() {
   const [loading, setLoading] = useState(true);
   const [downloading, setDownloading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [photoLightbox, setPhotoLightbox] = useState<{
+    url: string;
+    alt: string;
+  } | null>(null);
   const [search, setSearch] = useState("");
   const [filterType, setFilterType] = useState<"" | IncidentTypeCode>("");
   const [filterSeverity, setFilterSeverity] = useState<"" | (typeof SEVERITY_LEVELS)[number]>("");
@@ -303,11 +432,45 @@ export function IncidentLogPage() {
                     {r.reporter_contact ? ` · ${r.reporter_contact}` : ""}
                   </p>
                 ) : null}
+                {r.image_urls.length > 0 ? (
+                  <section
+                    className="mt-4 border-t border-slate-100 pt-3"
+                    aria-label={`Incident #${r.id} photos`}
+                  >
+                    <h3 className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                      Photos
+                    </h3>
+                    <div className="mt-2 grid grid-cols-2 gap-3 sm:grid-cols-3">
+                      {r.image_urls.map((url, i) => (
+                        <IncidentPhotoThumb
+                          key={`${r.id}-${url}-${i}`}
+                          url={url}
+                          incidentId={r.id}
+                          index={i}
+                          onOpen={() =>
+                            setPhotoLightbox({
+                              url,
+                              alt: `Incident #${r.id} photo ${i + 1}`,
+                            })
+                          }
+                        />
+                      ))}
+                    </div>
+                  </section>
+                ) : null}
               </li>
             ))}
           </ul>
         )}
       </section>
+
+      {photoLightbox ? (
+        <IncidentPhotoLightbox
+          url={photoLightbox.url}
+          alt={photoLightbox.alt}
+          onClose={() => setPhotoLightbox(null)}
+        />
+      ) : null}
     </div>
   );
 }
