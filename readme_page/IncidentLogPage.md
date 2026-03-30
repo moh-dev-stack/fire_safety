@@ -1,0 +1,69 @@
+# Incident log page
+
+**Route:** `/incidents/log` (protected)  
+**Source:** `src/pages/IncidentLogPage.tsx`  
+**API:** `src/lib/api.ts` — `fetchIncidents`, `downloadIncidentsCsv`  
+**Types/labels:** `src/model/incident.ts` — `IncidentRow`, `INCIDENT_TYPE_LABELS`, `JALSA_DAYS`, `jalsaDaySelectLabel`, `SEVERITY_LEVELS`, `SITE_LOCATIONS`, `INCIDENT_TYPE_CODES`
+
+## Purpose
+
+Browse **all submitted** incidents, narrow them with **search + filters**, open **new report**, or **download CSV**.
+
+## Header actions
+
+| Control | Behaviour |
+|---------|-----------|
+| **New report** | `<Link to="/incidents">` — styled as secondary button. |
+| **Download CSV** | Calls `downloadIncidentsCsv()`; label “Preparing…” while running; errors in alert region. |
+
+## Global states
+
+| State | UI |
+|--------|-----|
+| **Loading** | Single “Loading…” paragraph until first fetch completes. |
+| **Error** | Red alert (e.g. load failure, CSV failure). |
+| **Empty list** | Prompt + link to submit first report. |
+| **Filters exclude everything** | “No incidents match…” + **Clear filters** text button. |
+
+## Filter panel (`rows.length > 0` only)
+
+Shown inside a labelled region **“Filter incident log”**. Clearing filters resets all controls below.
+
+| Control | Type | What it filters |
+|---------|------|-----------------|
+| **Search** | `<input type="search">` | Case-insensitive substring across concatenated fields: id, type code + label, severity, location, description, actions, reporter name/contact, incident date/time. |
+| **Category** | `<select>` | `INCIDENT_TYPE_CODES`; option text is the **code** (e.g. `Fire`), not the long label. |
+| **Severity** | `<select>` | `SEVERITY_LEVELS` |
+| **On-site date** | `<select>` | `JALSA_DAYS`; option labels via `jalsaDaySelectLabel` |
+| **Location** | `<select>` | Union of **`SITE_LOCATIONS`** plus **any `location` string** appearing in loaded rows (sorted); lets you filter ad hoc locations from data. |
+| **Clear filters** | `<button>` | Disabled when no filter active (no search trim, no type, severity, date, or location). |
+
+**Counter:** “Showing **N** [of **M**]” updates with filtered vs total.
+
+## Incident cards (list)
+
+Each row (`IncidentRow`) displays:
+
+| Display | Source field |
+|---------|----------------|
+| `#id` | `r.id` (mono, small) |
+| Timestamp | `r.created_at` — `toLocaleString("en-GB")` |
+| Title line | `INCIDENT_TYPE_LABELS[r.incident_type]` + ` · {severity}` if present |
+| On-site date/time | `incident_date` or `—`; optional `incident_time` |
+| Location | `location` (bold line) |
+| Description | `description` |
+| Actions | `actions_taken` if set |
+| Reporter | `reporter_name`, `reporter_contact` if either present |
+
+**List key:** `r.id`.
+
+## CSV export
+
+- Triggered only from the button; column set is `INCIDENT_CSV_COLUMNS` in `incident.ts` (includes `image_urls` JSON in CSV helper — behaviour depends on `api.downloadIncidentsCsv` implementation).
+
+## POC limitations & likely adjustments
+
+- All rows load into memory; large events need **pagination** and **server-side** filter query params.
+- Category filter shows **codes** in the dropdown — consider showing labels for operators.
+- Role-based redaction (e.g. hide reporter contact) not implemented.
+- **If you add filters or change which fields are searchable**, document them here and in [README.md](./README.md).
