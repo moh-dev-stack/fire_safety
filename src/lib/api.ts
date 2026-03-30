@@ -1,4 +1,9 @@
-import type { IncidentCreate } from "../model/incident";
+import type { IncidentCreate, IncidentDraft } from "../model/incident";
+
+export type FetchIncidentDraftResult = {
+  draft: IncidentDraft | null;
+  updated_at?: string;
+};
 
 export class ValidationFailedError extends Error {
   readonly details: {
@@ -59,6 +64,25 @@ export async function fetchIncidents() {
   const res = await apiFetch("/api/incidents");
   if (!res.ok) throw new Error("Failed to load incidents");
   return res.json();
+}
+
+export async function fetchIncidentDraft(): Promise<FetchIncidentDraftResult> {
+  const res = await apiFetch("/api/incidents/draft");
+  if (!res.ok) throw new Error("Failed to load draft");
+  return res.json() as Promise<FetchIncidentDraftResult>;
+}
+
+export async function saveIncidentDraft(draft: IncidentDraft): Promise<void> {
+  const res = await apiFetch("/api/incidents/draft", {
+    method: "PUT",
+    body: JSON.stringify(draft),
+  });
+  if (!res.ok) throw new Error("Failed to save draft");
+}
+
+export async function clearIncidentDraft(): Promise<void> {
+  const res = await apiFetch("/api/incidents/draft", { method: "DELETE" });
+  if (!res.ok) throw new Error("Failed to clear draft");
 }
 
 export async function createIncident(body: IncidentCreate) {

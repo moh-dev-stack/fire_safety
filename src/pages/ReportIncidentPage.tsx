@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { ZodError } from "zod";
 import {
@@ -10,17 +10,87 @@ import {
   SITE_LOCATIONS,
   emptyIncidentDraft,
   incidentCreateSchema,
+  isIncidentDraftEmpty,
   jalsaDaySelectLabel,
   type IncidentDraft,
 } from "../model/incident";
-import { ValidationFailedError, createIncident } from "../lib/api";
+import {
+  ValidationFailedError,
+  clearIncidentDraft,
+  createIncident,
+  fetchIncidentDraft,
+  saveIncidentDraft,
+} from "../lib/api";
+import {
+  clearLocalIncidentDraft,
+  loadLocalIncidentDraftMeta,
+  saveLocalIncidentDraft,
+} from "../lib/incident-draft-local";
 import { formatFlattenedZodError } from "../lib/format-validation";
 
 export function ReportIncidentPage() {
   const [form, setForm] = useState<IncidentDraft>(() => emptyIncidentDraft());
+  const [hydrated, setHydrated] = useState(false);
+  const [draftNotice, setDraftNotice] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    async function hydrate() {
+      const local = loadLocalIncidentDraftMeta();
+      let serverDraft: IncidentDraft | null = null;
+      let serverTime = 0;
+      try {
+        const r = await fetchIncidentDraft();
+        if (!cancelled && r.draft) {
+          serverDraft = r.draft;
+          serverTime = r.updated_at ? Date.parse(r.updated_at) : 0;
+        }
+      } catch {
+        /* API unreachable — use browser draft only */
+      }
+      if (cancelled) return;
+      const localTime = local?.savedAt ?? 0;
+      if (serverDraft && serverTime >= localTime) {
+        setForm(serverDraft);
+        setDraftNotice(
+          "In-progress report restored from the database. It also saves on this device while you type.",
+        );
+      } else if (local?.draft && !isIncidentDraftEmpty(local.draft)) {
+        setForm(local.draft);
+        setDraftNotice(
+          "In-progress report restored on this device. Signed-in drafts also sync to the database.",
+        );
+      }
+      setHydrated(true);
+    }
+    void hydrate();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!draftNotice) return;
+    const t = window.setTimeout(() => setDraftNotice(null), 9000);
+    return () => window.clearTimeout(t);
+  }, [draftNotice]);
+
+  useEffect(() => {
+    if (!hydrated) return;
+    const t = window.setTimeout(() => {
+      if (isIncidentDraftEmpty(form)) {
+        clearLocalIncidentDraft();
+        void clearIncidentDraft().catch(() => {});
+        return;
+      }
+      saveLocalIncidentDraft(form);
+      void saveIncidentDraft(form).catch(() => {});
+    }, 650);
+    return () => window.clearTimeout(t);
+  }, [form, hydrated]);
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -41,6 +111,8 @@ export function ReportIncidentPage() {
       });
 
       await createIncident(payload);
+      clearLocalIncidentDraft();
+      void clearIncidentDraft().catch(() => {});
       setForm(emptyIncidentDraft());
       setSuccess("Incident reported. It appears under Incident log.");
     } catch (err) {
@@ -68,7 +140,8 @@ export function ReportIncidentPage() {
           <p className="mt-1 text-slate-600">
             Use this duty form for alarms, evacuations, medical events, hazards, and
             crowd-safety issues on site. Date, time, location, category, severity, description,
-            actions, and your name are required.
+            actions, and your name are required. While you type, your draft is saved to this
+            device and to the database (when signed in).
           </p>
         </div>
         <Link
@@ -78,6 +151,15 @@ export function ReportIncidentPage() {
           View all reports
         </Link>
       </header>
+
+      {draftNotice ? (
+        <p
+          className="rounded-lg border border-sky-200 bg-sky-50 px-4 py-3 text-sm text-sky-950"
+          role="status"
+        >
+          {draftNotice}
+        </p>
+      ) : null}
 
       {error ? (
         <div

@@ -157,6 +157,58 @@ export function emptyIncidentDraft(): IncidentDraft {
   };
 }
 
+/** Lenient shape for autosave (local + DB draft) before final Zod submit validation. */
+export const incidentDraftStorageSchema = z.object({
+  incident_date: z.string().max(32),
+  incident_time: z.string().max(16),
+  incident_type: z.string().max(32),
+  severity: z.string().max(32),
+  location: z.string().max(512),
+  description: z.string().max(8000),
+  actions_taken: z.string().max(8000),
+  reporter_name: z.string().max(200),
+});
+
+export function isIncidentDraftEmpty(d: IncidentDraft): boolean {
+  const e = emptyIncidentDraft();
+  return (
+    d.incident_date === e.incident_date &&
+    d.incident_time === e.incident_time &&
+    d.incident_type === e.incident_type &&
+    d.severity === e.severity &&
+    d.location === e.location &&
+    d.description === e.description &&
+    d.actions_taken === e.actions_taken &&
+    d.reporter_name === e.reporter_name
+  );
+}
+
+export function parseStoredIncidentDraft(data: unknown): IncidentDraft | null {
+  const r = incidentDraftStorageSchema.safeParse(data);
+  if (!r.success) return null;
+  const raw = r.data;
+  const incident_type: IncidentDraft["incident_type"] =
+    raw.incident_type !== "" &&
+    (INCIDENT_TYPE_CODES as readonly string[]).includes(raw.incident_type)
+      ? (raw.incident_type as IncidentTypeCode)
+      : "";
+  const severity: IncidentDraft["severity"] =
+    raw.severity !== "" &&
+    (SEVERITY_LEVELS as readonly string[]).includes(raw.severity)
+      ? (raw.severity as (typeof SEVERITY_LEVELS)[number])
+      : "";
+  return {
+    incident_date: raw.incident_date,
+    incident_time: raw.incident_time,
+    incident_type,
+    severity,
+    location: raw.location,
+    description: raw.description,
+    actions_taken: raw.actions_taken,
+    reporter_name: raw.reporter_name,
+  };
+}
+
 export type IncidentRow = {
   id: number;
   created_at: string;

@@ -17,9 +17,19 @@ describe("ReportIncidentPage", () => {
   const fetchMock = vi.fn();
 
   beforeEach(() => {
+    localStorage.clear();
     fetchMock.mockImplementation(
       (input: RequestInfo | URL, init?: RequestInit) => {
         const url = typeof input === "string" ? input : input.toString();
+        if (url.includes("/api/incidents/draft")) {
+          if (init?.method === "PUT" || init?.method === "DELETE") {
+            return Promise.resolve({ ok: true, status: 204 } as Response);
+          }
+          return Promise.resolve({
+            ok: true,
+            json: () => Promise.resolve({ draft: null }),
+          } as Response);
+        }
         if (url.includes("/api/incidents") && init?.method === "POST") {
           const body = JSON.parse(init.body as string);
           expect(body).toEqual({
@@ -52,6 +62,7 @@ describe("ReportIncidentPage", () => {
 
   afterEach(() => {
     cleanup();
+    localStorage.clear();
     vi.unstubAllGlobals();
   });
 

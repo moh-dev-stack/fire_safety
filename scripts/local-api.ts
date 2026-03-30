@@ -31,6 +31,21 @@ app.get("/api/incidents/export", (req, res) => {
     m.default(vReq(req), vRes(res)),
   );
 });
+app.get("/api/incidents/draft", (req, res) => {
+  void import("../api/incidents/draft.ts").then((m) =>
+    m.default(vReq(req), vRes(res)),
+  );
+});
+app.put("/api/incidents/draft", (req, res) => {
+  void import("../api/incidents/draft.ts").then((m) =>
+    m.default(vReq(req), vRes(res)),
+  );
+});
+app.delete("/api/incidents/draft", (req, res) => {
+  void import("../api/incidents/draft.ts").then((m) =>
+    m.default(vReq(req), vRes(res)),
+  );
+});
 app.get("/api/incidents", (req, res) => {
   void import("../api/incidents.ts").then((m) =>
     m.default(vReq(req), vRes(res)),
