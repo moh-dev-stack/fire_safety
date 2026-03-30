@@ -1,0 +1,39 @@
+import type { VercelRequest, VercelResponse } from "@vercel/node";
+import { createSessionToken, setSessionCookie } from "./lib/session";
+
+export default async function handler(req: VercelRequest, res: VercelResponse) {
+  if (req.method !== "POST") {
+    res.status(405).json({ error: "Method not allowed" });
+    return;
+  }
+
+  try {
+    const body =
+      typeof req.body === "string" ? JSON.parse(req.body) : req.body;
+    const username = String(body?.username ?? "").trim();
+    const password = String(body?.password ?? "").trim();
+
+    // Defaults match project convention; override with AUTH_USERNAME / AUTH_PASSWORD in env (e.g. Vercel).
+    const okUser = process.env.AUTH_USERNAME?.trim() || "1234";
+    const okPass = process.env.AUTH_PASSWORD?.trim() || "1234";
+
+    if (username !== okUser || password !== okPass) {
+      res.status(401).json({ error: "Invalid username or password" });
+      return;
+    }
+
+    const token = await createSessionToken();
+    setSessionCookie(res, token);
+    res.status(200).json({ ok: true });
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : "Invalid request";
+    if (msg.includes("SESSION_SECRET")) {
+      res.status(500).json({
+        error:
+          "Server misconfigured: set SESSION_SECRET (16+ chars) in .env.local. See .env.example.",
+      });
+      return;
+    }
+    res.status(400).json({ error: "Invalid request" });
+  }
+}

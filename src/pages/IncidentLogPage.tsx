@@ -1,0 +1,313 @@
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { Link } from "react-router-dom";
+import {
+  INCIDENT_TYPE_CODES,
+  INCIDENT_TYPE_LABELS,
+  JALSA_DAYS,
+  SEVERITY_LEVELS,
+  SITE_LOCATIONS,
+  jalsaDaySelectLabel,
+  type IncidentRow,
+  type IncidentTypeCode,
+} from "../model/incident";
+import * as api from "../lib/api";
+
+function rowMatchesSearch(row: IncidentRow, q: string): boolean {
+  if (!q) return true;
+  const needle = q.toLowerCase();
+  const hay = [
+    String(row.id),
+    INCIDENT_TYPE_LABELS[row.incident_type],
+    row.incident_type,
+    row.severity,
+    row.location,
+    row.description,
+    row.actions_taken ?? "",
+    row.reporter_name ?? "",
+    row.reporter_contact ?? "",
+    row.incident_date ?? "",
+    row.incident_time ?? "",
+  ]
+    .join(" ")
+    .toLowerCase();
+  return hay.includes(needle);
+}
+
+export function IncidentLogPage() {
+  const [rows, setRows] = useState<IncidentRow[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [downloading, setDownloading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [search, setSearch] = useState("");
+  const [filterType, setFilterType] = useState<"" | IncidentTypeCode>("");
+  const [filterSeverity, setFilterSeverity] = useState<"" | (typeof SEVERITY_LEVELS)[number]>("");
+  const [filterDate, setFilterDate] = useState<"" | (typeof JALSA_DAYS)[number]>("");
+  const [filterLocation, setFilterLocation] = useState("");
+
+  const load = useCallback(async () => {
+    setError(null);
+    try {
+      const data = (await api.fetchIncidents()) as IncidentRow[];
+      setRows(data);
+    } catch {
+      setError("Could not load incident reports.");
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    void load();
+  }, [load]);
+
+  async function onDownloadCsv() {
+    setDownloading(true);
+    setError(null);
+    try {
+      await api.downloadIncidentsCsv();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Download failed");
+    } finally {
+      setDownloading(false);
+    }
+  }
+
+  const locationOptions = useMemo(() => {
+    const set = new Set<string>(SITE_LOCATIONS);
+    for (const r of rows) set.add(r.location);
+    return Array.from(set).sort((a, b) => a.localeCompare(b));
+  }, [rows]);
+
+  const filteredRows = useMemo(() => {
+    return rows.filter((r) => {
+      if (filterType && r.incident_type !== filterType) return false;
+      if (filterSeverity && r.severity !== filterSeverity) return false;
+      if (filterDate && r.incident_date !== filterDate) return false;
+      if (filterLocation && r.location !== filterLocation) return false;
+      return rowMatchesSearch(r, search.trim());
+    });
+  }, [rows, filterType, filterSeverity, filterDate, filterLocation, search]);
+
+  const filtersActive =
+    Boolean(search.trim()) ||
+    Boolean(filterType) ||
+    Boolean(filterSeverity) ||
+    Boolean(filterDate) ||
+    Boolean(filterLocation);
+
+  function clearFilters() {
+    setSearch("");
+    setFilterType("");
+    setFilterSeverity("");
+    setFilterDate("");
+    setFilterLocation("");
+  }
+
+  return (
+    <div className="space-y-8">
+      <header className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-slate-900">Incident log</h1>
+          <p className="mt-1 text-slate-600">
+            All fire &amp; safety reports submitted for Jalsa. Export CSV includes the same fields as
+            below.
+          </p>
+        </div>
+        <div className="flex flex-col gap-2 sm:flex-row sm:shrink-0">
+          <Link
+            to="/incidents"
+            className="min-h-11 content-center rounded-lg border border-slate-300 bg-white px-4 py-3 text-center text-base font-semibold text-slate-900 shadow-sm hover:bg-slate-50"
+          >
+            New report
+          </Link>
+          <button
+            type="button"
+            onClick={() => void onDownloadCsv()}
+            disabled={downloading}
+            className="min-h-11 rounded-lg border border-slate-300 bg-white px-4 py-3 text-base font-semibold text-slate-900 shadow-sm hover:bg-slate-50 disabled:opacity-50"
+          >
+            {downloading ? "Preparing…" : "Download CSV"}
+          </button>
+        </div>
+      </header>
+
+      {error ? (
+        <p className="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-800" role="alert">
+          {error}
+        </p>
+      ) : null}
+
+      {!loading && rows.length > 0 ? (
+        <section
+          aria-label="Filter incident log"
+          className="rounded-xl border border-slate-200 bg-slate-50/80 p-4 shadow-sm"
+        >
+          <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-end sm:justify-between">
+            <div className="grid w-full gap-3 sm:max-w-3xl sm:grid-cols-2 lg:grid-cols-3">
+              <label className="block sm:col-span-2 lg:col-span-3">
+                <span className="mb-1 block text-sm font-medium text-slate-700">Search</span>
+                <input
+                  type="search"
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  placeholder="Text in description, location, reporter…"
+                  className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-base text-slate-900 shadow-sm placeholder:text-slate-400 focus:border-red-900 focus:outline-none focus:ring-2 focus:ring-red-900/20"
+                />
+              </label>
+              <label className="block">
+                <span className="mb-1 block text-sm font-medium text-slate-700">Category</span>
+                <select
+                  value={filterType}
+                  onChange={(e) =>
+                    setFilterType(e.target.value as "" | IncidentTypeCode)
+                  }
+                  className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-base text-slate-900 shadow-sm focus:border-red-900 focus:outline-none focus:ring-2 focus:ring-red-900/20"
+                >
+                  <option value="">All categories</option>
+                  {INCIDENT_TYPE_CODES.map((code) => (
+                    <option key={code} value={code}>
+                      {code}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <label className="block">
+                <span className="mb-1 block text-sm font-medium text-slate-700">Severity</span>
+                <select
+                  value={filterSeverity}
+                  onChange={(e) =>
+                    setFilterSeverity(
+                      e.target.value as "" | (typeof SEVERITY_LEVELS)[number],
+                    )
+                  }
+                  className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-base text-slate-900 shadow-sm focus:border-red-900 focus:outline-none focus:ring-2 focus:ring-red-900/20"
+                >
+                  <option value="">All severities</option>
+                  {SEVERITY_LEVELS.map((s) => (
+                    <option key={s} value={s}>
+                      {s}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <label className="block">
+                <span className="mb-1 block text-sm font-medium text-slate-700">On-site date</span>
+                <select
+                  value={filterDate}
+                  onChange={(e) =>
+                    setFilterDate(e.target.value as "" | (typeof JALSA_DAYS)[number])
+                  }
+                  className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-base text-slate-900 shadow-sm focus:border-red-900 focus:outline-none focus:ring-2 focus:ring-red-900/20"
+                >
+                  <option value="">All dates</option>
+                  {JALSA_DAYS.map((d) => (
+                    <option key={d} value={d}>
+                      {jalsaDaySelectLabel(d)}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <label className="block sm:col-span-2 lg:col-span-3">
+                <span className="mb-1 block text-sm font-medium text-slate-700">Location</span>
+                <select
+                  value={filterLocation}
+                  onChange={(e) => setFilterLocation(e.target.value)}
+                  className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-base text-slate-900 shadow-sm focus:border-red-900 focus:outline-none focus:ring-2 focus:ring-red-900/20"
+                >
+                  <option value="">All locations</option>
+                  {locationOptions.map((loc) => (
+                    <option key={loc} value={loc}>
+                      {loc}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            </div>
+            <div className="flex flex-col gap-2 sm:items-end">
+              <p className="text-sm text-slate-600">
+                Showing{" "}
+                <span className="font-semibold text-slate-900">{filteredRows.length}</span>
+                {rows.length !== filteredRows.length ? (
+                  <>
+                    {" "}
+                    of <span className="font-semibold text-slate-900">{rows.length}</span>
+                  </>
+                ) : null}
+              </p>
+              <button
+                type="button"
+                onClick={clearFilters}
+                disabled={!filtersActive}
+                className="min-h-11 rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-900 shadow-sm hover:bg-slate-50 disabled:pointer-events-none disabled:opacity-40"
+              >
+                Clear filters
+              </button>
+            </div>
+          </div>
+        </section>
+      ) : null}
+
+      <section>
+        {loading ? (
+          <p className="text-slate-600">Loading…</p>
+        ) : rows.length === 0 ? (
+          <p className="text-slate-600">
+            No incidents yet.{" "}
+            <Link to="/incidents" className="font-medium text-red-900 underline">
+              Submit the first report
+            </Link>
+            .
+          </p>
+        ) : filteredRows.length === 0 ? (
+          <p className="text-slate-600">
+            No incidents match these filters.{" "}
+            <button
+              type="button"
+              onClick={clearFilters}
+              className="font-medium text-red-900 underline"
+            >
+              Clear filters
+            </button>
+          </p>
+        ) : (
+          <ul className="space-y-4">
+            {filteredRows.map((r) => (
+              <li
+                key={r.id}
+                className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm"
+              >
+                <div className="flex flex-wrap items-baseline justify-between gap-2">
+                  <span className="font-mono text-sm text-slate-500">#{r.id}</span>
+                  <time className="text-xs text-slate-500">
+                    {new Date(r.created_at).toLocaleString("en-GB")}
+                  </time>
+                </div>
+                <p className="mt-2 font-medium text-red-900">
+                  {INCIDENT_TYPE_LABELS[r.incident_type]}
+                  {r.severity ? ` · ${r.severity}` : ""}
+                </p>
+                <p className="mt-1 text-sm text-slate-600">
+                  {r.incident_date ?? "—"}
+                  {r.incident_time ? ` · ${r.incident_time}` : ""}
+                </p>
+                <p className="mt-1 font-medium text-slate-900">{r.location}</p>
+                <p className="mt-2 text-sm text-slate-700">{r.description}</p>
+                {r.actions_taken ? (
+                  <p className="mt-2 text-sm text-slate-600">
+                    <span className="font-medium">Actions:</span> {r.actions_taken}
+                  </p>
+                ) : null}
+                {r.reporter_name || r.reporter_contact ? (
+                  <p className="mt-2 text-xs text-slate-500">
+                    Reporter: {r.reporter_name ?? "—"}
+                    {r.reporter_contact ? ` · ${r.reporter_contact}` : ""}
+                  </p>
+                ) : null}
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
+    </div>
+  );
+}
