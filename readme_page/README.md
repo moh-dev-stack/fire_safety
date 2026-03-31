@@ -8,7 +8,9 @@ This folder documents each screen in the **Fire & Safety — Jalsa** web app. Th
 
 | If you change… | Update these docs (minimum) |
 |----------------|----------------------------|
-| Incident model: days, categories, locations, time slots, severity | [ReportIncidentPage.md](./ReportIncidentPage.md), [IncidentLogPage.md](./IncidentLogPage.md), and the tables below if you mirror them here |
+| Incident model: days, categories, locations, time slots, severity, **or planned fields** (AIMS ID, department, radio, admin/status) | [ReportIncidentPage.md](./ReportIncidentPage.md), [IncidentLogPage.md](./IncidentLogPage.md), [plan/IncidentMandatoryReporterFields.md](../plan/IncidentMandatoryReporterFields.md), [plan/IncidentLogSuperAdmin.md](../plan/IncidentLogSuperAdmin.md), and the tables below if you mirror them here |
+| Rota availability / rota maker page | [RotaAvailabilityPage.md](./RotaAvailabilityPage.md), [plan/RotaAvailabilityPage.md](../plan/RotaAvailabilityPage.md) |
+| Training page, SOP, or quiz data | [TrainingPage.md](./TrainingPage.md), [plan/TrainingModule.md](../plan/TrainingModule.md) |
 | Team copy or roster | [TeamPage.md](./TeamPage.md) |
 | Rota structure or placeholder names | [RotaPage.md](./RotaPage.md) |
 | Login flow or default credentials | [LoginPage.md](./LoginPage.md) |
@@ -26,6 +28,8 @@ This folder documents each screen in the **Fire & Safety — Jalsa** web app. Th
 | `/login` | Sign-in | [LoginPage.md](./LoginPage.md) |
 | `/` (index) | Team overview | [TeamPage.md](./TeamPage.md) |
 | `/rota` | Duty rota | [RotaPage.md](./RotaPage.md) |
+| `/rota/availability` | Rota maker (availability) — **planned** | [RotaAvailabilityPage.md](./RotaAvailabilityPage.md) |
+| `/training` | Training (SOP + quiz) — **planned** | [TrainingPage.md](./TrainingPage.md) |
 | `/incidents` | Report incident | [ReportIncidentPage.md](./ReportIncidentPage.md) |
 | `/incidents/log` | Incident log | [IncidentLogPage.md](./IncidentLogPage.md) |
 | `/map` | Site map | [MapPage.md](./MapPage.md) |
@@ -97,6 +101,8 @@ Legacy string mappings for old rows: see `LEGACY_INCIDENT_TYPE_TO_CODE` in `inci
 - [LoginPage.md](./LoginPage.md)
 - [TeamPage.md](./TeamPage.md)
 - [RotaPage.md](./RotaPage.md)
+- [RotaAvailabilityPage.md](./RotaAvailabilityPage.md)
+- [TrainingPage.md](./TrainingPage.md)
 - [ReportIncidentPage.md](./ReportIncidentPage.md)
 - [IncidentLogPage.md](./IncidentLogPage.md)
 - [MapPage.md](./MapPage.md)
