@@ -24,7 +24,7 @@ export function AppLayout() {
   const [open, setOpen] = useState(false);
 
   return (
-    <div className="min-h-screen bg-slate-50 pb-24 sm:pb-8">
+    <div className="min-h-screen bg-slate-50 pb-[calc(5.25rem+env(safe-area-inset-bottom,0px))] sm:pb-8">
       <header className="sticky top-0 z-50 border-b border-slate-200 bg-white/95 backdrop-blur">
         <div className="mx-auto flex max-w-3xl items-center justify-between gap-2 px-4 py-3">
           <Link to="/" className="min-w-0 flex-1">
@@ -77,27 +77,31 @@ export function AppLayout() {
         </nav>
       </header>
 
-      <main className="mx-auto max-w-3xl px-4 py-6">
+      <main className="mx-auto max-w-3xl px-3 py-5 sm:px-4 sm:py-6">
         <Outlet />
       </main>
 
       <nav
-        className="fixed bottom-0 left-0 right-0 z-40 flex justify-around border-t border-slate-200 bg-white/95 px-1 py-2 backdrop-blur sm:hidden"
+        className="fixed bottom-0 left-0 right-0 z-40 border-t border-slate-200 bg-white/95 backdrop-blur sm:hidden"
         aria-label="Primary"
       >
-        {nav.map(({ to, label }) => (
-          <NavLink
-            key={to}
-            to={to}
-            className={({ isActive }) =>
-              `flex min-h-11 flex-1 flex-col items-center justify-center rounded-lg px-1 text-xs font-medium ${
-                isActive ? "text-red-800" : "text-slate-600"
-              }`
-            }
-          >
-            {label}
-          </NavLink>
-        ))}
+        <div className="flex gap-0.5 overflow-x-auto overflow-y-hidden overscroll-x-contain px-2 py-1.5 pb-[max(0.35rem,env(safe-area-inset-bottom))] [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          {nav.map(({ to, label }) => (
+            <NavLink
+              key={to}
+              to={to}
+              className={({ isActive }) =>
+                `flex min-h-12 min-w-[3.65rem] shrink-0 flex-col items-center justify-center rounded-xl px-1.5 text-center text-[11px] font-semibold leading-tight tracking-tight transition-colors ${
+                  isActive
+                    ? "bg-red-800 text-white shadow-sm"
+                    : "text-slate-600 active:bg-slate-100"
+                }`
+              }
+            >
+              {label}
+            </NavLink>
+          ))}
+        </div>
       </nav>
     </div>
   );

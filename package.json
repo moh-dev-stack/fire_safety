@@ -13,7 +13,9 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "preview": "vite preview",
-    "db:apply": "node scripts/apply-schema.mjs"
+    "db:apply": "node scripts/apply-schema.mjs",
+    "presentation:pdf": "cd presentation && npx --yes @marp-team/marp-cli --no-stdin --allow-local-files deck.md --pdf deck.pdf",
+    "presentation:capture": "node presentation/capture-screenshots.mjs"
   },
   "dependencies": {
     "@neondatabase/serverless": "^1.0.2",
@@ -47,6 +49,7 @@
     "express": "^5.2.1",
     "globals": "^17.4.0",
     "jsdom": "^29.0.1",
+    "playwright": "^1.50.1",
     "tailwindcss": "^4.2.2",
     "tsx": "^4.21.0",
     "typescript": "~5.9.3",
