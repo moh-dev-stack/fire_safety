@@ -23,9 +23,6 @@ How the app is split today: **public** vs **authenticated**, then **`admin`** vs
 | `GET/PUT/DELETE /api/incidents/draft` | Autosave draft per session (both tiers). |
 | `POST /api/incidents/blob-upload` | Vercel Blob handshake for report photos (both tiers; needs token on server). |
 | `GET /api/incidents/export` | CSV download (**admin only**; **403** for `user`). |
-| `GET /api/what3words/autosuggest` | Proxy suggest (session; optional `W3W_API_KEY`). |
-| `GET /api/what3words/convert` | Verify words (session; optional key). |
-| `GET /api/what3words/coordinates` | GPS → what3words (session; optional key). |
 | `GET /api/cron/snapshot-incidents` | CSV snapshot to Blob (**Bearer CRON_SECRET**; not session). |
 
 ## Frontend routes & pages
@@ -36,7 +33,7 @@ Feature flags (Vite): `VITE_ENABLE_TRAINING`, `VITE_ENABLE_VENUE_CHECKLIST` — 
 
 | Route | Page | Feature |
 |-------|------|---------|
-| `/incidents` | Report incident | Full report flow: validation, what3words (if configured), photos (Blob), draft autosave, submit to DB. |
+| `/incidents` | Report incident | Full report flow: validation, optional manual what3words text, photos (Blob), draft autosave, submit to DB. |
 | `/help` | Help | Static help content. |
 
 ### Training module (when enabled)
@@ -84,8 +81,8 @@ Feature flags (Vite): `VITE_ENABLE_TRAINING`, `VITE_ENABLE_VENUE_CHECKLIST` — 
 
 | Command | What it covers |
 |--------|----------------|
-| `npm test` | Incident model, report/log page behaviours, events, training data, session JWT role, `postLoginPath`, AppLayout nav by role, what3words handler mock. |
-| `npm run smoke` | Live HTTP checks on `:3000`: anonymous `me`, login failures, admin/user login + `me`, user forbidden on list/export, admin list/export (or DB warning), user draft GET, autosuggest, logout; then `me` with no cookie → 401. |
+| `npm test` | Incident model, report/log page behaviours, events, training data, session JWT role, `postLoginPath`, AppLayout nav by role. |
+| `npm run smoke` | Live HTTP checks on `:3000`: anonymous `me`, login failures, admin/user login + `me`, user forbidden on list/export, admin list/export (or DB warning), user draft GET, logout; then `me` with no cookie → 401. |
 
 ### Manual UI checklist (browser)
 

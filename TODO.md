@@ -14,7 +14,7 @@ The `/rota/availability` page, `rotaAvailability` data module, and feature flag 
 
 **Spec:** [`plan/IncidentMandatoryReporterFields.md`](plan/IncidentMandatoryReporterFields.md) · **Docs:** [`readme_page/ReportIncidentPage.md`](readme_page/ReportIncidentPage.md), [`readme_page/IncidentLogPage.md`](readme_page/IncidentLogPage.md)
 
-**Shipped:** mandatory **free-text `department`**, optional **`incident_w3w`** (+ `/api/what3words/*` proxy, `W3W_API_KEY`), report/log/CSV/drafts/tests updated.
+**Shipped:** mandatory **free-text `department`**, optional **`incident_w3w`** (manual text only; no what3words API), report/log/CSV/drafts/tests updated.
 
 - [ ] PM: AIMS ID format, radio field copy and mandatory vs optional
 - [ ] Neon migration: `aims_id`, `radio_info` (+ backfill strategy for existing rows)
@@ -144,5 +144,4 @@ The `/rota/availability` page, `rotaAvailability` data module, and feature flag 
 
 - [ ] Rota availability (if reintroduced): server + DB for pooled submissions (multi-device)
 - [ ] Training: formal completion / sign-off backend (if PM requires)
-- [ ] what3words: API autosuggest (needs key)
 - [ ] Incident log: pagination + server-side filters for large events

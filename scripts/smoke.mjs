@@ -185,17 +185,6 @@ async function main() {
     pass("GET /api/incidents/draft as user → 200");
   }
 
-  const w3w = await fetch(`${API}/api/what3words/autosuggest?input=test`, {
-    headers: { Cookie: adminLogin.cookie },
-  });
-  if (w3w.status === 503) {
-    warn("what3words autosuggest → 503 (W3W_API_KEY not set — optional)");
-  } else if (w3w.status === 200) {
-    pass("GET /api/what3words/autosuggest → 200");
-  } else {
-    warn(`GET /api/what3words/autosuggest → ${w3w.status}`);
-  }
-
   const logoutRes = await fetch(`${API}/api/logout`, {
     method: "POST",
     headers: { Cookie: adminLogin.cookie },

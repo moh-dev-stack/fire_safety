@@ -82,7 +82,6 @@ npm run dev:vite
 | `SESSION_SECRET` | Yes | Min 16 chars; signs the HTTP-only session cookie (`jose` HS256) |
 | `CRON_SECRET` | For secured cron | Vercel sends `Authorization: Bearer <CRON_SECRET>` when this is set in the project |
 | `BLOB_READ_WRITE_TOKEN` | For photos & snapshots | Vercel Blob read/write token; without it, incident photo uploads return **503** and cron snapshot returns **503** |
-| `W3W_API_KEY` | Optional | [what3words](https://developer.what3words.com/) API key for `/api/what3words/autosuggest` and `/api/what3words/convert` (signed-in users only). Without it, those routes return **503** / empty suggestions; incident reports still work. |
 
 **Client (Vite):** Optional `VITE_ENABLE_TRAINING`, `VITE_ENABLE_VENUE_CHECKLIST` — set to `false` to hide those routes and nav entries (`src/config/features.ts`). Defaults: enabled.
 
@@ -106,8 +105,6 @@ In the Vercel dashboard, set these for **Production** (and optionally **Preview*
 | POST | `/api/incidents` | Session | Create incident (body validated with Zod; optional `image_urls` HTTPS Blob URLs, see `src/model/incident.ts`) |
 | POST | `/api/incidents/blob-upload` | Session | Client-upload handshake for Vercel Blob (`handleUpload`); requires `BLOB_READ_WRITE_TOKEN` |
 | GET | `/api/incidents/export` | Session (`admin`) | CSV download — **`403`** if `role` is `user` |
-| GET | `/api/what3words/autosuggest` | Session | Query: `input` — proxies to what3words autosuggest (requires `W3W_API_KEY`) |
-| GET | `/api/what3words/convert` | Session | Query: `words` — verifies a three-word address via what3words convert (requires `W3W_API_KEY`) |
 | GET | `/api/cron/snapshot-incidents` | `Authorization: Bearer ${CRON_SECRET}` | Full CSV dump to Vercel Blob (filename includes UTC timestamp) |
 
 ## Incident data model

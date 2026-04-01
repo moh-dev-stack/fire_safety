@@ -11,15 +11,6 @@ config({ path: resolve(process.cwd(), ".env") });
 config({ path: resolve(process.cwd(), ".env.local"), override: true });
 if (!process.env.NODE_ENV) process.env.NODE_ENV = "development";
 
-const w3wPresent = Boolean(
-  process.env.W3W_API_KEY?.trim() ||
-    process.env.WHAT3WORDS_API_KEY?.trim() ||
-    process.env.W3_API_KEY?.trim(),
-);
-console.log(
-  `[local-api] what3words key: ${w3wPresent ? "loaded" : "missing — set W3W_API_KEY in .env.local and restart"}`,
-);
-
 const vReq = (req: Request) => req as unknown as VercelRequest;
 const vRes = (res: Response) => res as unknown as VercelResponse;
 
@@ -68,22 +59,6 @@ app.post("/api/incidents", (req, res) => {
 });
 app.post("/api/incidents/blob-upload", (req, res) => {
   void import("../api/incidents/blob-upload.ts").then((m) =>
-    m.default(vReq(req), vRes(res)),
-  );
-});
-
-app.get("/api/what3words/autosuggest", (req, res) => {
-  void import("../api/what3words/autosuggest.ts").then((m) =>
-    m.default(vReq(req), vRes(res)),
-  );
-});
-app.get("/api/what3words/convert", (req, res) => {
-  void import("../api/what3words/convert.ts").then((m) =>
-    m.default(vReq(req), vRes(res)),
-  );
-});
-app.get("/api/what3words/coordinates", (req, res) => {
-  void import("../api/what3words/coordinates.ts").then((m) =>
     m.default(vReq(req), vRes(res)),
   );
 });

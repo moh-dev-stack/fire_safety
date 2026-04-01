@@ -1,6 +1,6 @@
 # Incident report & log — reporter identity, radio information
 
-**Addendum (engineering):** The POC now ships **mandatory free-text `department`** and **optional `incident_w3w`** (what3words via server proxy and `W3W_API_KEY`). **AIMS ID** and **radio** fields below are **not** implemented yet; this file remains the spec for those follow-ups.
+**Addendum (engineering):** The POC now ships **mandatory free-text `department`** and **optional `incident_w3w`** (manual what3words text only; no API). **AIMS ID** and **radio** fields below are **not** implemented yet; this file remains the spec for those follow-ups.
 
 **Scope:**
 
