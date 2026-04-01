@@ -29,6 +29,34 @@ describe("ReportIncidentPage", () => {
     fetchMock.mockImplementation(
       (input: RequestInfo | URL, init?: RequestInit) => {
         const url = typeof input === "string" ? input : input.toString();
+        if (url.includes("/api/what3words/autosuggest")) {
+          return Promise.resolve({
+            ok: true,
+            json: () => Promise.resolve({ suggestions: [] }),
+          } as Response);
+        }
+        if (url.includes("/api/what3words/convert")) {
+          return Promise.resolve({
+            ok: true,
+            json: () =>
+              Promise.resolve({
+                words: "filled.count.soak",
+                nearestPlace: "",
+                country: "",
+              }),
+          } as Response);
+        }
+        if (url.includes("/api/what3words/coordinates")) {
+          return Promise.resolve({
+            ok: true,
+            json: () =>
+              Promise.resolve({
+                words: "index.home.raft",
+                nearestPlace: "",
+                country: "",
+              }),
+          } as Response);
+        }
         if (url.includes("/api/incidents/draft")) {
           if (init?.method === "PUT" || init?.method === "DELETE") {
             return Promise.resolve({ ok: true, status: 204 } as Response);
@@ -55,6 +83,7 @@ describe("ReportIncidentPage", () => {
               description: "Smoke near catering tent.",
               actions_taken: "Area cleared.",
               reporter_name: "Sam Duty",
+              department: "Fire marshal north",
               image_urls: [],
             }),
           );
@@ -110,6 +139,10 @@ describe("ReportIncidentPage", () => {
     );
     await user.type(screen.getByLabelText(/Actions taken/i), "Area cleared.");
     await user.type(screen.getByLabelText(/^Your name/i), "Sam Duty");
+    await user.type(
+      screen.getByLabelText(/Department or team/i),
+      "Fire marshal north",
+    );
 
     await user.click(screen.getByRole("button", { name: /Submit fire/ }));
 
@@ -150,6 +183,34 @@ describe("ReportIncidentPage", () => {
     fetchMock.mockImplementation(
       (input: RequestInfo | URL, init?: RequestInit) => {
         const url = typeof input === "string" ? input : input.toString();
+        if (url.includes("/api/what3words/autosuggest")) {
+          return Promise.resolve({
+            ok: true,
+            json: () => Promise.resolve({ suggestions: [] }),
+          } as Response);
+        }
+        if (url.includes("/api/what3words/convert")) {
+          return Promise.resolve({
+            ok: true,
+            json: () =>
+              Promise.resolve({
+                words: "filled.count.soak",
+                nearestPlace: "",
+                country: "",
+              }),
+          } as Response);
+        }
+        if (url.includes("/api/what3words/coordinates")) {
+          return Promise.resolve({
+            ok: true,
+            json: () =>
+              Promise.resolve({
+                words: "index.home.raft",
+                nearestPlace: "",
+                country: "",
+              }),
+          } as Response);
+        }
         if (url.includes("/api/incidents/draft")) {
           if (init?.method === "PUT" || init?.method === "DELETE") {
             return Promise.resolve({ ok: true, status: 204 } as Response);
@@ -214,6 +275,10 @@ describe("ReportIncidentPage", () => {
     await user.type(screen.getByLabelText(/Actions taken/i), "Area cleared.");
     await user.upload(screen.getByLabelText(/Add photos/i), file);
     await user.type(screen.getByLabelText(/^Your name/i), "Sam Duty");
+    await user.type(
+      screen.getByLabelText(/Department or team/i),
+      "Fire marshal north",
+    );
 
     await user.click(screen.getByRole("button", { name: /Submit fire/ }));
 

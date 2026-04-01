@@ -7,70 +7,94 @@ export type RotaEntry = {
 export type RotaDay = {
   label: string;
   dateIso: string;
-  entries: RotaEntry[];
+  /** Two day shifts per calendar day (e.g. morning / afternoon). */
+  dayShifts: readonly RotaEntry[];
+  /** Two night shifts per calendar day (e.g. evening–late / late–morning). */
+  nightShifts: readonly RotaEntry[];
 };
 
-export const rotaDays: RotaDay[] = [
+export const rotaDays: readonly RotaDay[] = [
   {
     label: "Friday",
     dateIso: "2026-07-24",
-    entries: [
+    dayShifts: [
       {
-        time: "07:00–12:00",
+        time: "08:00–14:00",
         people: "Person A, Person B",
-        notes: "Site opening and morning coverage",
+        notes: "Day shift 1 — site opening and morning coverage",
       },
       {
-        time: "12:00–18:00",
+        time: "14:00–20:00",
         people: "Person B, Person C",
-        notes: "Afternoon peak",
+        notes: "Day shift 2 — afternoon peak",
+      },
+    ],
+    nightShifts: [
+      {
+        time: "20:00–02:00",
+        people: "Person C, Person A",
+        notes: "Night shift 1 — evening handover and late site",
       },
       {
-        time: "18:00–22:00",
-        people: "Person A, Person C",
-        notes: "Evening wind-down",
+        time: "02:00–08:00",
+        people: "Person A, Person B",
+        notes: "Night shift 2 — early hours (into Saturday morning)",
       },
     ],
   },
   {
     label: "Saturday",
     dateIso: "2026-07-25",
-    entries: [
+    dayShifts: [
       {
-        time: "07:00–12:00",
+        time: "08:00–14:00",
         people: "Person C, Person A",
-        notes: "Main day — first shift",
+        notes: "Day shift 1 — main Jalsa day",
       },
       {
-        time: "12:00–18:00",
+        time: "14:00–20:00",
         people: "Person A, Person B",
-        notes: "Main day — middle shift",
+        notes: "Day shift 2 — afternoon / evening transition",
+      },
+    ],
+    nightShifts: [
+      {
+        time: "20:00–02:00",
+        people: "Person B, Person C",
+        notes: "Night shift 1",
       },
       {
-        time: "18:00–22:00",
-        people: "Person B, Person C",
-        notes: "Evening",
+        time: "02:00–08:00",
+        people: "Person C, Person A",
+        notes: "Night shift 2 — early hours (into Sunday morning)",
       },
     ],
   },
   {
     label: "Sunday",
     dateIso: "2026-07-26",
-    entries: [
+    dayShifts: [
       {
-        time: "07:00–12:00",
+        time: "08:00–14:00",
         people: "Person B, Person A",
-        notes: "Final day — morning",
+        notes: "Day shift 1 — final day morning",
       },
       {
-        time: "12:00–18:00",
+        time: "14:00–20:00",
         people: "Person C, Person B",
-        notes: "Final day — afternoon",
+        notes: "Day shift 2 — wind-down and departures",
+      },
+    ],
+    nightShifts: [
+      {
+        time: "20:00–23:00",
+        people: "Person A, Person C",
+        notes: "Night shift 1 — site close support (shortened)",
       },
       {
-        time: "18:00–21:00",
-        people: "Person A, Person C",
-        notes: "Site close support",
+        time: "23:00–02:00",
+        people: "Person A, Person B",
+        notes: "Night shift 2 — lock-up / security (where applicable)",
       },
     ],
   },

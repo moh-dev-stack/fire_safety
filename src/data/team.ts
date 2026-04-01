@@ -1,34 +1,27 @@
-export type TeamMember = {
-  role: string;
-  name: string;
-  contact: string;
-  notes: string;
+export type TeamGroup = {
+  title: string;
+  body: string;
 };
 
-export const teamMembers: TeamMember[] = [
+/** Three organisational layers only — no individual names or contact details. */
+export const teamGroups: TeamGroup[] = [
   {
-    role: "Fire Safety Lead",
-    name: "Person A",
-    contact: "persona@example.com · 07123 456789",
-    notes: "Overall coordination for fire and safety during Jalsa Salana 2026.",
+    title: "Kek Fire and Safety Team",
+    body: "Central fire and safety leadership and coordination for Jalsa Salana.",
   },
   {
-    role: "Deputy Lead",
-    name: "Person B",
-    contact: "personb@example.com · 07123 456790",
-    notes: "Deputises for the lead; first point of escalation.",
+    title: "External Kek Fire and Safety Team",
+    body: "Fire and safety support deployed for the event from outside the local area.",
   },
   {
-    role: "Site Liaison",
-    name: "Person C",
-    contact: "personc@example.com · 07123 456791",
-    notes: "Coordinates with site operations and venue marshalling.",
+    title: "Local Team",
+    body: "Local fire and safety volunteers and on-site coordination.",
   },
 ];
 
 export const teamIntro = {
   title: "Fire & Safety Team",
   subtitle: "Jalsa Salana 2026 · 24–26 July · Islamabad, UK",
-  body: `This team supports safe conduct of Jalsa Salana 2026. Use the rota for shift times,
-    submit incident reports as soon as practical after an event, and keep the site map handy for orientation.`,
+  body: `Fire and safety is organised in three layers: the Kek Fire and Safety Team, the External Kek Fire and Safety Team, and the local team.
+    Submit incident reports as soon as practical after an event, and keep the site map handy for orientation.`,
 };

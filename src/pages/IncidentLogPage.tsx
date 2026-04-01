@@ -25,6 +25,8 @@ function rowMatchesSearch(row: IncidentRow, q: string): boolean {
     row.actions_taken ?? "",
     row.reporter_name ?? "",
     row.reporter_contact ?? "",
+    row.department ?? "",
+    row.incident_w3w ?? "",
     row.incident_date ?? "",
     row.incident_time ?? "",
     row.image_urls.join(" "),
@@ -426,12 +428,32 @@ export function IncidentLogPage() {
                     <span className="font-medium">Actions:</span> {r.actions_taken}
                   </p>
                 ) : null}
-                {r.reporter_name || r.reporter_contact ? (
-                  <p className="mt-2 text-xs text-slate-500">
-                    Reporter: {r.reporter_name ?? "—"}
-                    {r.reporter_contact ? ` · ${r.reporter_contact}` : ""}
-                  </p>
-                ) : null}
+                <p className="mt-2 text-xs text-slate-500">
+                  <span className="font-medium text-slate-600">Reporter:</span>{" "}
+                  {r.reporter_name ?? "—"}
+                  {r.reporter_contact ? ` · ${r.reporter_contact}` : ""}
+                  {r.department ? (
+                    <>
+                      <br />
+                      <span className="font-medium text-slate-600">Department:</span>{" "}
+                      {r.department}
+                    </>
+                  ) : null}
+                  {r.incident_w3w ? (
+                    <>
+                      <br />
+                      <span className="font-medium text-slate-600">what3words:</span>{" "}
+                      <a
+                        href={`https://what3words.com/${encodeURIComponent(r.incident_w3w)}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="font-mono text-red-900 underline"
+                      >
+                        {r.incident_w3w}
+                      </a>
+                    </>
+                  ) : null}
+                </p>
                 {r.image_urls.length > 0 ? (
                   <section
                     className="mt-4 border-t border-slate-100 pt-3"

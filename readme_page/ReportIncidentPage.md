@@ -40,22 +40,12 @@ All required unless noted. Select options come from `incident.ts` — **if you a
 | 6 | What happened | `<textarea>` | Required; max **8000** chars; placeholder guides factual wording. |
 | 7 | Actions taken | `<textarea>` | Required; max **8000** chars. |
 | 8 | Your name | `<input>` text | Required; trimmed; max **200** chars. |
-| 9 | Photos (optional) | `<input type="file" multiple>` | Accepts JPEG, PNG, WebP, HEIC/HEIF; up to **`INCIDENT_IMAGE_URL_MAX` (8)** total across uploaded URLs + pending files. **Uploaded** URLs live in draft (`image_urls`); **pending** `File`s only in memory until submit. On submit, files upload via `@vercel/blob/client` → `uploadIncidentImages` (handshake `POST /api/incidents/blob-upload`) then `createIncident` sends HTTPS Blob URLs. |
+| 9 | Department or team | `<input>` text | **Mandatory**; free text (not a fixed enum); trimmed; max **300** chars; autosaves in drafts like other fields. |
+| 10 | what3words (optional) | `<input>` text | Optional; normalised on submit (`///` stripped, lowercase). Debounced **autosuggest** + **Verify** call signed-in `GET /api/what3words/*` when `W3W_API_KEY` is set server-side; otherwise suggestions stay empty. Invalid non-empty format blocks submit. |
+| 11 | Photos (optional) | `<input type="file" multiple>` | Accepts JPEG, PNG, WebP, HEIC/HEIF; up to **`INCIDENT_IMAGE_URL_MAX` (8)** total across uploaded URLs + pending files. **Uploaded** URLs live in draft (`image_urls`); **pending** `File`s only in memory until submit. On submit, files upload via `@vercel/blob/client` → `uploadIncidentImages` (handshake `POST /api/incidents/blob-upload`) then `createIncident` sends HTTPS Blob URLs. |
 | **Submit** | Button | **“Submit fire & safety report”** / “Saving…” when busy; disabled while saving. |
 
-**Not collected (shipped):** `reporter_contact` (may exist on stored rows from API).
-
-### Planned — reporter identity & radio (not yet in codebase)
-
-**Spec:** [`plan/IncidentMandatoryReporterFields.md`](../plan/IncidentMandatoryReporterFields.md). When implemented, renumber the form table above and move these rows into it.
-
-| # | Field | Control | Rules (target) |
-|---|-------|---------|----------------|
-| — | AIMS ID | `<input>` text | **Mandatory** on submit; trim; format per PM / Zod (`aims_id`). |
-| — | Department | `<select>` or text | **Mandatory**; from `DEPARTMENTS` in `incident.ts` if PM supplies list, else constrained text (`department`). |
-| — | Radio / communications | `<input>` or short `<textarea>` | **Optional** by default (`radio_info`): channel, callsign, or short comms note; max length per PM. Group in a “Radio / communications” fieldset with PM helper text. |
-
-**Drafts:** extend `IncidentDraft` and server/local draft save so `aims_id`, `department`, and `radio_info` autosave like other fields. **API / DB:** `INSERT` and migrations per plan; keep `incidentCreateSchema` and Neon in lockstep.
+**Not collected (shipped):** `reporter_contact` (may exist on stored rows from API). **Still planned:** AIMS ID, radio — see [`plan/IncidentMandatoryReporterFields.md`](../plan/IncidentMandatoryReporterFields.md).
 
 ## Draft autosave
 

@@ -68,6 +68,14 @@ export function mapRow(r: Record<string, unknown>): IncidentRow {
       r.reporter_contact != null && String(r.reporter_contact).length > 0
         ? String(r.reporter_contact)
         : null,
+    department:
+      r.department != null && String(r.department).length > 0
+        ? String(r.department)
+        : null,
+    incident_w3w:
+      r.incident_w3w != null && String(r.incident_w3w).length > 0
+        ? String(r.incident_w3w)
+        : null,
     image_urls: parseImageUrls(r.image_urls),
   };
 }

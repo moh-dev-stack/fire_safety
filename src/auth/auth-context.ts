@@ -1,9 +1,13 @@
 import { createContext } from "react";
+import type { SessionRole } from "../model/sessionRole";
+
+export type { SessionRole };
 
 export type AuthContextValue = {
   ready: boolean;
   authenticated: boolean;
-  login: (password: string) => Promise<void>;
+  role: SessionRole | null;
+  login: (username: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
   refresh: () => Promise<void>;
 };

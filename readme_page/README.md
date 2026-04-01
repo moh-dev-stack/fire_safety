@@ -8,8 +8,7 @@ This folder documents each screen in the **Fire & Safety — Jalsa** web app. Th
 
 | If you change… | Update these docs (minimum) |
 |----------------|----------------------------|
-| Incident model: days, categories, locations, time slots, severity, **or planned fields** (AIMS ID, department, radio, admin/status) | [ReportIncidentPage.md](./ReportIncidentPage.md), [IncidentLogPage.md](./IncidentLogPage.md), [plan/IncidentMandatoryReporterFields.md](../plan/IncidentMandatoryReporterFields.md), [plan/IncidentLogSuperAdmin.md](../plan/IncidentLogSuperAdmin.md), and the tables below if you mirror them here |
-| Rota availability / rota maker page | [RotaAvailabilityPage.md](./RotaAvailabilityPage.md), [plan/RotaAvailabilityPage.md](../plan/RotaAvailabilityPage.md) |
+| Incident model: days, categories, locations, time slots, severity, **department**, **what3words**, **or planned fields** (AIMS ID, radio, admin/status) | [ReportIncidentPage.md](./ReportIncidentPage.md), [IncidentLogPage.md](./IncidentLogPage.md), [plan/IncidentMandatoryReporterFields.md](../plan/IncidentMandatoryReporterFields.md), [plan/IncidentLogSuperAdmin.md](../plan/IncidentLogSuperAdmin.md), and the tables below if you mirror them here |
 | Training page, SOP, or quiz data | [TrainingPage.md](./TrainingPage.md), [plan/TrainingModule.md](../plan/TrainingModule.md) |
 | Team copy or roster | [TeamPage.md](./TeamPage.md) |
 | Rota structure or placeholder names | [RotaPage.md](./RotaPage.md) |
@@ -17,7 +16,7 @@ This folder documents each screen in the **Fire & Safety — Jalsa** web app. Th
 | Map centre, zoom, or tile provider | [MapPage.md](./MapPage.md) |
 | Routes in `App.tsx` | Route table below + any page doc paths |
 
-**Canonical source of truth for dropdown values** (incidents) is **`src/model/incident.ts`**. Team/rota lists live in **`src/data/team.ts`** and **`src/data/rota.ts`**. If this README duplicates enums, prefer re-reading those files when in doubt.
+**Canonical source of truth for dropdown values** (incidents) is **`src/model/incident.ts`**. **On-site incident dates** (`JALSA_DAYS`) are loaded from the **active event** in **`src/data/events.ts`** (set `EVENT_ID` / `VITE_EVENT_ID`; default `jalsa-2026-islamabad`). Team/rota lists live in **`src/data/team.ts`** and **`src/data/rota.ts`**. If this README duplicates enums, prefer re-reading those files when in doubt.
 
 ---
 
@@ -28,13 +27,14 @@ This folder documents each screen in the **Fire & Safety — Jalsa** web app. Th
 | `/login` | Sign-in | [LoginPage.md](./LoginPage.md) |
 | `/` (index) | Team overview | [TeamPage.md](./TeamPage.md) |
 | `/rota` | Duty rota | [RotaPage.md](./RotaPage.md) |
-| `/rota/availability` | Rota maker (availability) — **planned** | [RotaAvailabilityPage.md](./RotaAvailabilityPage.md) |
-| `/training` | Training (SOP + quiz) — **planned** | [TrainingPage.md](./TrainingPage.md) |
+| `/training` | Training hub — gated by `VITE_ENABLE_TRAINING` | [TrainingPage.md](./TrainingPage.md) |
+| `/training/fire-extinguishers` | Fire extinguishers + triangle + 5-question quiz | [TrainingPage.md](./TrainingPage.md) |
+| `/venue-checklist` | Kitchen / car park / langar checklist, submit + history — gated by `VITE_ENABLE_VENUE_CHECKLIST` | [VenueChecklistPage.md](./VenueChecklistPage.md) |
 | `/incidents` | Report incident | [ReportIncidentPage.md](./ReportIncidentPage.md) |
 | `/incidents/log` | Incident log | [IncidentLogPage.md](./IncidentLogPage.md) |
 | `/map` | Site map | [MapPage.md](./MapPage.md) |
 
-Unknown paths redirect to `/` (see `src/App.tsx`).
+Unknown paths redirect to `/` (see `src/App.tsx`). **Feature flags:** defaults are **on** unless the matching `VITE_*` env is set to `false` — see `src/config/features.ts`.
 
 ---
 
@@ -44,11 +44,15 @@ These drive **Report incident** `<select>`s and **Incident log** filters. **Upda
 
 ### Incident date (`JALSA_DAYS`)
 
+Values come from **`getActiveEvent().dates`** in [`src/data/events.ts`](../src/data/events.ts). Default event **`jalsa-2026-islamabad`**:
+
 | Stored value (ISO) | Label in UI |
 |--------------------|-------------|
-| `2026-07-24` | Fri 24 Jul 2026 |
-| `2026-07-25` | Sat 25 Jul 2026 |
-| `2026-07-26` | Sun 26 Jul 2026 |
+| `2026-07-24` | (locale weekday + date) |
+| `2026-07-25` | … |
+| `2026-07-26` | … |
+
+Labels use `jalsaDaySelectLabel()` (`en-GB`). **Test events** in the same file use other ISO ranges (e.g. `test-fire-drill-mar-2026`, `test-winter-ops-2026`) — switch with `EVENT_ID` / `VITE_EVENT_ID` (see [DEVELOPER.md](../DEVELOPER.md)).
 
 ### Time on site (`INCIDENT_TIME_SLOTS`)
 
@@ -101,8 +105,8 @@ Legacy string mappings for old rows: see `LEGACY_INCIDENT_TYPE_TO_CODE` in `inci
 - [LoginPage.md](./LoginPage.md)
 - [TeamPage.md](./TeamPage.md)
 - [RotaPage.md](./RotaPage.md)
-- [RotaAvailabilityPage.md](./RotaAvailabilityPage.md)
 - [TrainingPage.md](./TrainingPage.md)
+- [VenueChecklistPage.md](./VenueChecklistPage.md)
 - [ReportIncidentPage.md](./ReportIncidentPage.md)
 - [IncidentLogPage.md](./IncidentLogPage.md)
 - [MapPage.md](./MapPage.md)

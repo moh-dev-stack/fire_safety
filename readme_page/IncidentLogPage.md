@@ -31,7 +31,7 @@ Shown inside a labelled region **“Filter incident log”**. Clearing filters r
 
 | Control | Type | What it filters |
 |---------|------|-----------------|
-| **Search** | `<input type="search">` | Case-insensitive substring across concatenated fields: id, type code + label, severity, location, description, actions, reporter name/contact, incident date/time, **and each `image_urls` string** (e.g. part of a Blob path). **Planned:** also `aims_id`, `department`, `radio_info` when those columns exist — see [Reporter fields (planned)](#planned--reporter-fields--super-admin). |
+| **Search** | `<input type="search">` | Case-insensitive substring across concatenated fields: id, type code + label, severity, location, description, actions, reporter name/contact, **`department`**, **`incident_w3w`**, incident date/time, **and each `image_urls` string** (e.g. part of a Blob path). **Planned:** `aims_id`, `radio_info` — see [Reporter fields (planned)](#planned--reporter-fields--super-admin). |
 | **Category** | `<select>` | `INCIDENT_TYPE_CODES`; option text is the **code** (e.g. `Fire`), not the long label. |
 | **Severity** | `<select>` | `SEVERITY_LEVELS` |
 | **On-site date** | `<select>` | `JALSA_DAYS`; option labels via `jalsaDaySelectLabel` |
@@ -53,8 +53,8 @@ Each row (`IncidentRow`) displays:
 | Location | `location` (bold line) |
 | Description | `description` |
 | Actions | `actions_taken` if set |
-| Reporter | `reporter_name`, `reporter_contact` if either present |
-| **Planned:** AIMS ID / department / radio | `aims_id`, `department`, `radio_info` when present — see [Reporter fields (planned)](#planned--reporter-fields--super-admin). |
+| Reporter | **Reporter** line: `reporter_name`, optional `reporter_contact`. **Department** line when `department` set. **what3words** link to `https://what3words.com/{words}` when `incident_w3w` set. |
+| **Planned:** AIMS ID / radio | `aims_id`, `radio_info` when present — see [Reporter fields (planned)](#planned--reporter-fields--super-admin). |
 | **Planned:** Operational status | `operational_status`, `status_updated_at`, optional `status_comment` — see [Super admin (planned)](#planned--reporter-fields--super-admin). |
 | **Planned:** Admin notes | `admin_notes` (super-admin only; internal). |
 | **Photos** | If `r.image_urls.length > 0`: region **`aria-label`** `Incident #{id} photos`, heading “Photos”, grid of thumbnails. Each thumb is a **button** (`aria-label` e.g. `Enlarge Incident #… photo N`); helper text “Click photo to enlarge”. **Lightbox:** full-screen `role="dialog"`, **Back to log** closes; **click backdrop** or **Esc** also closes; footer text + **Open in new tab** link. Broken thumbnails: “Try enlarged view” + “Open in new tab”. |
@@ -64,7 +64,7 @@ Each row (`IncidentRow`) displays:
 ## CSV export
 
 - Triggered only from the button; column set is `INCIDENT_CSV_COLUMNS` in `incident.ts`. The **`image_urls`** column is a **JSON-encoded array** of HTTPS strings in each CSV row (same as DB), so exports and optional Blob snapshot CSVs retain photo links.
-- **Planned:** add `aims_id`, `department`, `radio_info` (and super-admin-only export columns for `admin_notes` / status if PM requires) — [`plan/IncidentMandatoryReporterFields.md`](../plan/IncidentMandatoryReporterFields.md), [`plan/IncidentLogSuperAdmin.md`](../plan/IncidentLogSuperAdmin.md).
+- Includes **`department`**, **`incident_w3w`** in the column set. **Planned:** add `aims_id`, `radio_info` (and super-admin-only columns if PM requires) — [`plan/IncidentMandatoryReporterFields.md`](../plan/IncidentMandatoryReporterFields.md), [`plan/IncidentLogSuperAdmin.md`](../plan/IncidentLogSuperAdmin.md).
 
 ## Planned — reporter fields & super admin
 
@@ -72,7 +72,7 @@ Each row (`IncidentRow`) displays:
 
 | Topic | Plan |
 |-------|------|
-| Mandatory **name** (existing), **AIMS ID**, **department**; optional **radio_info**; log + CSV + search | [`plan/IncidentMandatoryReporterFields.md`](../plan/IncidentMandatoryReporterFields.md) |
+| Mandatory **name**, **department** (free text, shipped); optional **what3words** (shipped); **AIMS ID**; optional **radio_info**; log + CSV + search | [`plan/IncidentMandatoryReporterFields.md`](../plan/IncidentMandatoryReporterFields.md) |
 | **Super admin:** archive/clean rows, **admin notes**, **operational status** updates; server-side role gate | [`plan/IncidentLogSuperAdmin.md`](../plan/IncidentLogSuperAdmin.md) |
 
 **Target super-admin UX (summary):** authenticated users with super-admin claim see per-card actions: edit **admin notes**, change **status** (+ optional comment), **archive** (soft `deleted_at` preferred). Volunteers’ list hides archived rows unless a super-admin filter is on. All mutations **must** be enforced in API handlers, not UI-only.

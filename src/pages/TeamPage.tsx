@@ -1,4 +1,4 @@
-import { teamIntro, teamMembers } from "../data/team";
+import { teamIntro, teamGroups } from "../data/team";
 
 export function TeamPage() {
   return (
@@ -9,15 +9,13 @@ export function TeamPage() {
         <p className="mt-4 text-slate-700">{teamIntro.body}</p>
       </header>
       <ul className="space-y-4">
-        {teamMembers.map((m) => (
+        {teamGroups.map((g) => (
           <li
-            key={m.role}
+            key={g.title}
             className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm"
           >
-            <h2 className="text-lg font-semibold text-red-900">{m.role}</h2>
-            <p className="mt-2 font-medium text-slate-900">{m.name}</p>
-            <p className="mt-1 text-sm text-slate-600">{m.contact}</p>
-            <p className="mt-3 text-sm text-slate-700">{m.notes}</p>
+            <h2 className="text-lg font-semibold text-red-900">{g.title}</h2>
+            <p className="mt-3 text-sm text-slate-700">{g.body}</p>
           </li>
         ))}
       </ul>

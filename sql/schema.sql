@@ -26,3 +26,7 @@ CREATE TABLE IF NOT EXISTS incident_report_drafts (
   payload JSONB NOT NULL,
   updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
+
+ALTER TABLE incidents ADD COLUMN IF NOT EXISTS department TEXT NOT NULL DEFAULT '';
+
+ALTER TABLE incidents ADD COLUMN IF NOT EXISTS incident_w3w TEXT;

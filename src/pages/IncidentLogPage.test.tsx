@@ -21,6 +21,8 @@ describe("IncidentLogPage", () => {
       actions_taken: "Cleared.",
       reporter_name: "Patrol",
       reporter_contact: null,
+      department: "Patrol north",
+      incident_w3w: "filled.count.soak",
       image_urls: [
         "https://ex.public.blob.vercel-storage.com/unique-segment-a/photo1.png",
         "https://ex.public.blob.vercel-storage.com/unique-segment-b/photo2.png",

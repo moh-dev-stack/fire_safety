@@ -19,7 +19,7 @@ React 19, TypeScript, Vite, Tailwind CSS v4, React Router, Leaflet, Zod (shared 
 
 See **[DEVELOPER.md](DEVELOPER.md)** — start with **What to do next (first-time setup)** for Neon, `sql/schema.sql`, and `.env.local`.
 
-**Run locally:** `npm run dev:all` then open **http://localhost:5173/** (sign in with password **1234**).
+**Run locally:** `npm run dev` (starts API + Vite) then open **http://localhost:5173/** (sign in with password **1234**). Same as `npm run dev:all`.
 
 ## Licence
 

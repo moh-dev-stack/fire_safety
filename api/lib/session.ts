@@ -1,6 +1,9 @@
 import { SignJWT, jwtVerify } from "jose";
+import type { SessionRole } from "../../src/model/sessionRole.js";
 
 export const SESSION_COOKIE = "jalsa_session";
+
+export type { SessionRole };
 
 function getSecret(): Uint8Array {
   const s = process.env.SESSION_SECRET;
@@ -10,20 +13,24 @@ function getSecret(): Uint8Array {
   return new TextEncoder().encode(s);
 }
 
-export async function createSessionToken(): Promise<string> {
-  return new SignJWT({ auth: "jalsa-fire-safety" })
+export async function createSessionToken(role: SessionRole): Promise<string> {
+  return new SignJWT({ auth: "jalsa-fire-safety", role })
     .setProtectedHeader({ alg: "HS256" })
     .setIssuedAt()
     .setExpirationTime("7d")
     .sign(getSecret());
 }
 
-export async function verifySessionToken(token: string): Promise<boolean> {
+export async function getSessionRoleFromToken(
+  token: string,
+): Promise<SessionRole | null> {
   try {
-    await jwtVerify(token, getSecret());
-    return true;
+    const { payload } = await jwtVerify(token, getSecret());
+    const r = payload.role;
+    if (r === "admin" || r === "user") return r;
+    return null;
   } catch {
-    return false;
+    return null;
   }
 }
 

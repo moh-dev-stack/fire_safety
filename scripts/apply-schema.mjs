@@ -31,9 +31,26 @@ function loadEnvLocal() {
 }
 
 loadEnvLocal();
-const url = process.env.DATABASE_URL;
+
+/** Same resolution as api/lib/neon.ts so migrations hit the DB the app uses. */
+function resolveDatabaseUrl() {
+  const candidates = [
+    process.env.DATABASE_URL,
+    process.env.POSTGRES_URL,
+    process.env.POSTGRES_PRISMA_URL,
+    process.env.POSTGRES_URL_NON_POOLING,
+  ];
+  for (const u of candidates) {
+    if (typeof u === "string" && u.trim().length > 0) return u.trim();
+  }
+  return null;
+}
+
+const url = resolveDatabaseUrl();
 if (!url) {
-  console.error("DATABASE_URL missing in .env.local");
+  console.error(
+    "No Postgres URL in .env.local. Set DATABASE_URL (recommended) or POSTGRES_URL / POSTGRES_PRISMA_URL.",
+  );
   process.exit(1);
 }
 

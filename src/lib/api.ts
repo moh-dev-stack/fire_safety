@@ -4,6 +4,7 @@ import {
   type IncidentCreate,
   type IncidentDraft,
 } from "../model/incident";
+import type { SessionRole } from "../model/sessionRole";
 
 export type FetchIncidentDraftResult = {
   draft: IncidentDraft | null;
@@ -38,16 +39,16 @@ async function apiFetch(path: string, init?: RequestInit) {
   return res;
 }
 
-export async function login(password: string) {
+export async function login(username: string, password: string) {
   let res: Response;
   try {
     res = await apiFetch("/api/login", {
       method: "POST",
-      body: JSON.stringify({ password }),
+      body: JSON.stringify({ username, password }),
     });
   } catch {
     throw new Error(
-      "Cannot reach the server. Run `npm run dev:all` (starts API on :3000 and this site on :5173), then open http://localhost:5173/",
+      "Cannot reach the server. Run `npm run dev` (API on :3000 + Vite on :5173 with /api proxy), then open http://localhost:5173/",
     );
   }
   if (!res.ok) {
@@ -60,9 +61,21 @@ export async function logout() {
   await apiFetch("/api/logout", { method: "POST" });
 }
 
-export async function me(): Promise<boolean> {
+export type MeResult =
+  | { ok: true; role: SessionRole }
+  | { ok: false; role?: undefined };
+
+export async function me(): Promise<MeResult> {
   const res = await apiFetch("/api/me");
-  return res.ok;
+  if (!res.ok) return { ok: false };
+  const j = (await res.json().catch(() => ({}))) as {
+    ok?: unknown;
+    role?: SessionRole;
+  };
+  if (j.role === "admin" || j.role === "user") {
+    return { ok: true, role: j.role };
+  }
+  return { ok: false };
 }
 
 export async function fetchIncidents() {
@@ -124,6 +137,7 @@ export async function createIncident(body: IncidentCreate) {
   if (!res.ok) {
     const j = (await res.json().catch(() => ({}))) as {
       error?: string;
+      hint?: string;
       details?: {
         formErrors?: string[];
         fieldErrors?: Record<string, string[] | undefined>;
@@ -137,9 +151,123 @@ export async function createIncident(body: IncidentCreate) {
         j.error ?? "Validation failed",
       );
     }
-    throw new Error(j.error ?? "Save failed");
+    const msg = j.error ?? "Save failed";
+    throw new Error(j.hint ? `${msg} — ${j.hint}` : msg);
   }
   return res.json();
+}
+
+export type What3WordsSuggestion = { words: string; nearestPlace: string };
+
+export async function fetchWhat3WordsAutosuggest(
+  input: string,
+): Promise<{ suggestions: What3WordsSuggestion[] }> {
+  const q = input.trim();
+  const params = new URLSearchParams({ input: q });
+  const res = await fetch(`/api/what3words/autosuggest?${params.toString()}`, {
+    credentials: "include",
+  });
+  if (res.status === 503) {
+    return { suggestions: [] };
+  }
+  if (!res.ok) {
+    throw new Error("what3words suggest failed");
+  }
+  return res.json() as Promise<{ suggestions: What3WordsSuggestion[] }>;
+}
+
+function w3wClientErrorMessage(status: number, fallback: string, j: { error?: string }): string {
+  if (status === 503) {
+    return j.error ?? "what3words is not configured on the server (set W3W_API_KEY).";
+  }
+  if (status === 401) {
+    return "Sign in again, then retry.";
+  }
+  return j.error ?? fallback;
+}
+
+const W3W_PROXY_HINT =
+  "Got HTML instead of JSON — the API server is not running on port 3000 or /api is not proxied. Run `npm run dev`, or in two terminals: `npm run dev:api` then `npm run dev:vite -- --host`.";
+
+function parseWhat3WordsProxyBody(text: string): {
+  error?: string;
+  words?: string;
+  nearestPlace?: string;
+  country?: string;
+} {
+  const trimmed = text.trim();
+  if (!trimmed) return {};
+  if (trimmed.startsWith("<")) {
+    throw new Error(W3W_PROXY_HINT);
+  }
+  try {
+    return JSON.parse(text) as {
+      error?: string;
+      words?: string;
+      nearestPlace?: string;
+      country?: string;
+    };
+  } catch {
+    throw new Error(`what3words proxy returned non-JSON: ${trimmed.slice(0, 120)}`);
+  }
+}
+
+export async function fetchWhat3WordsConvert(words: string): Promise<{
+  words: string;
+  nearestPlace: string;
+  country: string;
+}> {
+  const params = new URLSearchParams({ words: words.trim() });
+  const res = await fetch(`/api/what3words/convert?${params.toString()}`, {
+    credentials: "include",
+  });
+  const j = parseWhat3WordsProxyBody(await res.text());
+  if (!res.ok) {
+    throw new Error(
+      w3wClientErrorMessage(res.status, "Could not verify what3words address", j),
+    );
+  }
+  if (!j.words) {
+    throw new Error(
+      j.error ?? "Could not verify what3words address (response had no words field)",
+    );
+  }
+  return {
+    words: j.words,
+    nearestPlace: j.nearestPlace ?? "",
+    country: j.country ?? "",
+  };
+}
+
+/** Reverse geocode: device GPS → three-word address (server calls what3words convert-to-3wa). */
+export async function fetchWhat3WordsFromCoordinates(
+  lat: number,
+  lng: number,
+): Promise<{ words: string; nearestPlace: string; country: string }> {
+  const params = new URLSearchParams({
+    lat: String(lat),
+    lng: String(lng),
+  });
+  const res = await fetch(`/api/what3words/coordinates?${params.toString()}`, {
+    credentials: "include",
+  });
+  const j = parseWhat3WordsProxyBody(await res.text());
+  if (!res.ok) {
+    throw new Error(
+      w3wClientErrorMessage(res.status, "Could not get what3words from location", j),
+    );
+  }
+  if (!j.words) {
+    throw new Error(
+      j.error ??
+        "Could not get what3words from location (response had no words field). Check W3W_API_KEY and server logs.",
+    );
+  }
+  return {
+    words: j.words,
+    nearestPlace: j.nearestPlace ?? "",
+    country: j.country ?? "",
+  };
 }
 
 export async function downloadIncidentsCsv() {

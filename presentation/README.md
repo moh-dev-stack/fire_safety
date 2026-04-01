@@ -20,7 +20,7 @@ From the repository root:
 
 ```bash
 npm install
-npm run dev:all
+npm run dev
 ```
 
 This starts the API on port **3000** and the Vite dev server (typically **http://127.0.0.1:5173**). Open that URL in a browser.
@@ -45,7 +45,7 @@ Capture **full-page** or **viewport** shots that show each screen clearly. Save 
 
 Re-capture after UI changes so the deck stays accurate.
 
-**Automated capture:** with the dev stack running (`npm run dev:all`), from the repo root:
+**Automated capture:** with the dev stack running (`npm run dev`), from the repo root:
 
 ```bash
 npm run presentation:capture

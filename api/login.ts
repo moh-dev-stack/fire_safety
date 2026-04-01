@@ -1,8 +1,19 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
-import { createSessionToken, setSessionCookie } from "./lib/session.js";
+import {
+  createSessionToken,
+  setSessionCookie,
+  type SessionRole,
+} from "./lib/session.js";
 
 /** Fixed POC gate — not overridable via env; only this value is accepted. */
 const LOGIN_PASSWORD = "1234";
+
+function roleFromUsername(raw: string): SessionRole | null {
+  const u = raw.trim();
+  if (u === "admin") return "admin";
+  if (u === "user") return "user";
+  return null;
+}
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== "POST") {
@@ -13,16 +24,18 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   try {
     const body =
       typeof req.body === "string" ? JSON.parse(req.body) : req.body;
+    const username = String(body?.username ?? "");
     const password = String(body?.password ?? "").trim();
+    const role = roleFromUsername(username);
 
-    if (password !== LOGIN_PASSWORD) {
-      res.status(401).json({ error: "Invalid password" });
+    if (!role || password !== LOGIN_PASSWORD) {
+      res.status(401).json({ error: "Invalid username or password" });
       return;
     }
 
-    const token = await createSessionToken();
+    const token = await createSessionToken(role);
     setSessionCookie(res, token);
-    res.status(200).json({ ok: true });
+    res.status(200).json({ ok: true, role });
   } catch (err) {
     const msg = err instanceof Error ? err.message : "Invalid request";
     if (msg.includes("SESSION_SECRET")) {

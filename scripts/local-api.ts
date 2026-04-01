@@ -1,14 +1,24 @@
 /**
  * Serves /api/* on port 3000 for local development without `vercel dev`.
- * Loads `.env.local` first. Use with Vite (proxy) via `npm run dev:all`.
+ * Loads `.env.local` first. Use with Vite (proxy) via `npm run dev` or `npm run dev:vite`.
  */
 import { config } from "dotenv";
 import express, { type Request, type Response } from "express";
 import { resolve } from "node:path";
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 
-config({ path: resolve(process.cwd(), ".env.local") });
+config({ path: resolve(process.cwd(), ".env") });
+config({ path: resolve(process.cwd(), ".env.local"), override: true });
 if (!process.env.NODE_ENV) process.env.NODE_ENV = "development";
+
+const w3wPresent = Boolean(
+  process.env.W3W_API_KEY?.trim() ||
+    process.env.WHAT3WORDS_API_KEY?.trim() ||
+    process.env.W3_API_KEY?.trim(),
+);
+console.log(
+  `[local-api] what3words key: ${w3wPresent ? "loaded" : "missing — set W3W_API_KEY in .env.local and restart"}`,
+);
 
 const vReq = (req: Request) => req as unknown as VercelRequest;
 const vRes = (res: Response) => res as unknown as VercelResponse;
@@ -62,6 +72,22 @@ app.post("/api/incidents/blob-upload", (req, res) => {
   );
 });
 
+app.get("/api/what3words/autosuggest", (req, res) => {
+  void import("../api/what3words/autosuggest.ts").then((m) =>
+    m.default(vReq(req), vRes(res)),
+  );
+});
+app.get("/api/what3words/convert", (req, res) => {
+  void import("../api/what3words/convert.ts").then((m) =>
+    m.default(vReq(req), vRes(res)),
+  );
+});
+app.get("/api/what3words/coordinates", (req, res) => {
+  void import("../api/what3words/coordinates.ts").then((m) =>
+    m.default(vReq(req), vRes(res)),
+  );
+});
+
 app.get("/api/cron/snapshot-incidents", (req, res) => {
   void import("../api/cron/snapshot-incidents.ts").then((m) =>
     m.default(vReq(req), vRes(res)),
@@ -75,5 +101,5 @@ app.post("/api/cron/snapshot-incidents", (req, res) => {
 
 const port = Number(process.env.PORT) || 3000;
 app.listen(port, "127.0.0.1", () => {
-  console.log(`Local API http://127.0.0.1:${port} (loaded .env.local if present)`);
+  console.log(`Local API http://127.0.0.1:${port} (merged .env + .env.local)`);
 });

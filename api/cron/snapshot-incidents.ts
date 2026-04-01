@@ -33,7 +33,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const rows = await sql`
       SELECT id, created_at, incident_date::text AS incident_date, incident_time,
              incident_type, severity, location, description, actions_taken,
-             reporter_name, reporter_contact, image_urls
+             reporter_name, reporter_contact, department, incident_w3w, image_urls
       FROM incidents
       ORDER BY id ASC
     `;

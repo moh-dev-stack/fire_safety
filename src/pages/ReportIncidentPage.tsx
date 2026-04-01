@@ -12,6 +12,7 @@ import {
   emptyIncidentDraft,
   incidentCreateSchema,
   isIncidentDraftEmpty,
+  isPlausibleIncidentW3w,
   jalsaDaySelectLabel,
   type IncidentDraft,
 } from "../model/incident";
@@ -20,8 +21,12 @@ import {
   clearIncidentDraft,
   createIncident,
   fetchIncidentDraft,
+  fetchWhat3WordsAutosuggest,
+  fetchWhat3WordsConvert,
+  fetchWhat3WordsFromCoordinates,
   saveIncidentDraft,
   uploadIncidentImages,
+  type What3WordsSuggestion,
 } from "../lib/api";
 import {
   clearLocalIncidentDraft,
@@ -40,6 +45,13 @@ export function ReportIncidentPage() {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const successRef = useRef<HTMLParagraphElement>(null);
+  const [w3wSuggestions, setW3wSuggestions] = useState<What3WordsSuggestion[]>(
+    [],
+  );
+  const [w3wSuggestBusy, setW3wSuggestBusy] = useState(false);
+  const [w3wVerifyBusy, setW3wVerifyBusy] = useState(false);
+  const [w3wGeoBusy, setW3wGeoBusy] = useState(false);
+  const [w3wNotice, setW3wNotice] = useState<string | null>(null);
 
   const photoSlotsLeft =
     INCIDENT_IMAGE_URL_MAX - form.image_urls.length - pendingFiles.length;
@@ -108,6 +120,32 @@ export function ReportIncidentPage() {
     return () => window.clearTimeout(t);
   }, [form, hydrated]);
 
+  useEffect(() => {
+    const q = form.incident_w3w.trim();
+    if (q.length < 2) {
+      setW3wSuggestions([]);
+      return;
+    }
+    let cancelled = false;
+    const t = window.setTimeout(() => {
+      setW3wSuggestBusy(true);
+      void fetchWhat3WordsAutosuggest(q)
+        .then((r) => {
+          if (!cancelled) setW3wSuggestions(r.suggestions);
+        })
+        .catch(() => {
+          if (!cancelled) setW3wSuggestions([]);
+        })
+        .finally(() => {
+          if (!cancelled) setW3wSuggestBusy(false);
+        });
+    }, 400);
+    return () => {
+      cancelled = true;
+      window.clearTimeout(t);
+    };
+  }, [form.incident_w3w]);
+
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     setSaving(true);
@@ -130,6 +168,8 @@ export function ReportIncidentPage() {
         description: form.description.trim(),
         actions_taken: form.actions_taken.trim(),
         reporter_name: form.reporter_name,
+        department: form.department,
+        incident_w3w: form.incident_w3w.trim() || undefined,
         image_urls,
       });
 
@@ -164,7 +204,8 @@ export function ReportIncidentPage() {
           <p className="mt-1 text-slate-600">
             Use this duty form for alarms, evacuations, medical events, hazards, and
             crowd-safety issues on site. Date, time, location, category, severity, description,
-            actions, and your name are required. You can add up to {INCIDENT_IMAGE_URL_MAX} optional
+            actions, your name, and department or team are required. Optional what3words helps
+            pin the incident on site. You can add up to {INCIDENT_IMAGE_URL_MAX} optional
             photos (stored on Vercel Blob). While you type, your draft is saved to this device and
             to the database (when signed in); new file picks are kept in the browser until you
             submit.
@@ -446,20 +487,208 @@ export function ReportIncidentPage() {
             ) : null}
           </div>
 
-          <div>
-            <label htmlFor="reporter_name" className="block text-sm font-medium text-slate-700">
-              Your name <span className="text-red-700">*</span>
-            </label>
-            <input
-              id="reporter_name"
-              required
-              value={form.reporter_name}
-              onChange={(e) =>
-                setForm((f) => ({ ...f, reporter_name: e.target.value }))
-              }
-              className="mt-1 w-full min-h-11 rounded-lg border border-slate-300 px-3 py-2 text-base"
-            />
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div>
+              <label htmlFor="reporter_name" className="block text-sm font-medium text-slate-700">
+                Your name <span className="text-red-700">*</span>
+              </label>
+              <input
+                id="reporter_name"
+                required
+                autoComplete="name"
+                value={form.reporter_name}
+                onChange={(e) =>
+                  setForm((f) => ({ ...f, reporter_name: e.target.value }))
+                }
+                className="mt-1 w-full min-h-11 rounded-lg border border-slate-300 px-3 py-2 text-base"
+              />
+            </div>
+            <div>
+              <label htmlFor="department" className="block text-sm font-medium text-slate-700">
+                Department or team <span className="text-red-700">*</span>
+              </label>
+              <input
+                id="department"
+                required
+                value={form.department}
+                onChange={(e) =>
+                  setForm((f) => ({ ...f, department: e.target.value }))
+                }
+                placeholder="Free text — e.g. Fire marshal team A, Catering H&S"
+                className="mt-1 w-full min-h-11 rounded-lg border border-slate-300 px-3 py-2 text-base"
+              />
+              <p className="mt-1 text-xs text-slate-500">
+                Short label for your duty area or team (not a fixed list).
+              </p>
+            </div>
           </div>
+
+          <div>
+            <label htmlFor="incident_w3w" className="block text-sm font-medium text-slate-700">
+              what3words address (optional)
+            </label>
+            <div className="mt-1 flex flex-col gap-2">
+              <input
+                id="incident_w3w"
+                value={form.incident_w3w}
+                onChange={(e) => {
+                  setW3wNotice(null);
+                  setForm((f) => ({ ...f, incident_w3w: e.target.value }));
+                }}
+                placeholder="e.g. index.home.raft"
+                autoComplete="off"
+                aria-describedby="incident_w3w_help"
+                className="min-h-11 w-full rounded-lg border border-slate-300 px-3 py-2 text-base"
+              />
+              <div className="flex flex-wrap gap-2">
+                <button
+                  type="button"
+                  disabled={
+                    w3wVerifyBusy ||
+                    !form.incident_w3w.trim() ||
+                    !isPlausibleIncidentW3w(form.incident_w3w)
+                  }
+                  onClick={() => {
+                    setW3wNotice(null);
+                    setW3wVerifyBusy(true);
+                    void fetchWhat3WordsConvert(form.incident_w3w)
+                      .then((r) => {
+                        setForm((f) => ({ ...f, incident_w3w: r.words }));
+                        setW3wNotice(
+                          r.nearestPlace
+                            ? `Verified: ${r.words} (near ${r.nearestPlace})`
+                            : `Verified: ${r.words}`,
+                        );
+                        setW3wSuggestions([]);
+                      })
+                      .catch((err) => {
+                        setW3wNotice(
+                          err instanceof Error ? err.message : "Verification failed",
+                        );
+                      })
+                      .finally(() => setW3wVerifyBusy(false));
+                  }}
+                  className="min-h-11 shrink-0 rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-900 shadow-sm hover:bg-slate-50 disabled:opacity-50"
+                >
+                  {w3wVerifyBusy ? "Checking…" : "Verify with API"}
+                </button>
+                <button
+                  type="button"
+                  disabled={w3wGeoBusy || w3wVerifyBusy}
+                  onClick={() => {
+                    if (!navigator.geolocation) {
+                      setW3wNotice(
+                        "Your browser does not support location. Enter three words manually or type to search.",
+                      );
+                      return;
+                    }
+                    setW3wNotice(null);
+                    setW3wGeoBusy(true);
+                    navigator.geolocation.getCurrentPosition(
+                      (pos) => {
+                        void fetchWhat3WordsFromCoordinates(
+                          pos.coords.latitude,
+                          pos.coords.longitude,
+                        )
+                          .then((r) => {
+                            setForm((f) => ({ ...f, incident_w3w: r.words }));
+                            setW3wSuggestions([]);
+                            setW3wNotice(
+                              r.nearestPlace
+                                ? `From your location: ${r.words} (near ${r.nearestPlace})`
+                                : `From your location: ${r.words}`,
+                            );
+                          })
+                          .catch((err) => {
+                            setW3wNotice(
+                              err instanceof Error
+                                ? err.message
+                                : "Could not look up what3words for this position.",
+                            );
+                          })
+                          .finally(() => setW3wGeoBusy(false));
+                      },
+                      () => {
+                        setW3wGeoBusy(false);
+                        setW3wNotice(
+                          "Location unavailable (permission blocked or GPS off). You can still type three words.",
+                        );
+                      },
+                      {
+                        enableHighAccuracy: true,
+                        timeout: 20_000,
+                        maximumAge: 60_000,
+                      },
+                    );
+                  }}
+                  className="min-h-11 shrink-0 rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-900 shadow-sm hover:bg-slate-50 disabled:opacity-50"
+                >
+                  {w3wGeoBusy ? "Locating…" : "Use my location"}
+                </button>
+              </div>
+            </div>
+            <p id="incident_w3w_help" className="mt-1 text-xs text-slate-500">
+              Type for suggestions, use <strong>Use my location</strong> to autofill from GPS (via
+              server), or <strong>Verify with API</strong> once three words are complete. Needs{" "}
+              <code className="rounded bg-slate-100 px-1">W3W_API_KEY</code> on the API. See{" "}
+              <a
+                href="https://what3words.com/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="font-medium text-red-900 underline"
+              >
+                what3words.com
+              </a>
+              . For local dev, run <code className="rounded bg-slate-100 px-1">npm run dev</code>{" "}
+              so <code className="rounded bg-slate-100 px-1">/api</code> reaches the backend. Leave
+              blank if not used.
+            </p>
+            {w3wSuggestBusy ? (
+              <p className="mt-2 text-xs text-slate-500" aria-live="polite">
+                Looking up…
+              </p>
+            ) : null}
+            {w3wSuggestions.length > 0 ? (
+              <ul
+                className="mt-2 max-h-48 overflow-auto rounded-lg border border-slate-200 bg-white text-sm shadow-sm"
+                role="listbox"
+                aria-label="what3words suggestions"
+              >
+                {w3wSuggestions.map((s) => (
+                  <li key={s.words} role="none">
+                    <button
+                      type="button"
+                      role="option"
+                      className="w-full px-3 py-2 text-left hover:bg-slate-50 focus:bg-slate-100 focus:outline-none"
+                      onClick={() => {
+                        setForm((f) => ({ ...f, incident_w3w: s.words }));
+                        setW3wSuggestions([]);
+                        setW3wNotice(
+                          s.nearestPlace
+                            ? `Selected ${s.words} (near ${s.nearestPlace})`
+                            : `Selected ${s.words}`,
+                        );
+                      }}
+                    >
+                      <span className="font-mono text-slate-900">{s.words}</span>
+                      {s.nearestPlace ? (
+                        <span className="ml-2 text-slate-600">· {s.nearestPlace}</span>
+                      ) : null}
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            ) : null}
+            {w3wNotice ? (
+              <p
+                className="mt-2 rounded-md border border-slate-200 bg-slate-50 px-3 py-2 text-xs text-slate-800"
+                role="status"
+              >
+                {w3wNotice}
+              </p>
+            ) : null}
+          </div>
+
           <button
             type="submit"
             disabled={saving}

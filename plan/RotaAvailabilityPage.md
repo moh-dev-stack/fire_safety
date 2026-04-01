@@ -1,6 +1,8 @@
 # Rota availability page (rota maker) — plan
 
-**Planned route:** `/rota/availability` (protected, inside `AppLayout`)  
+**Application status:** **Removed** from the codebase (no `/rota/availability` route; `readme_page/RotaAvailabilityPage.md` deleted). This file is **historical / spec only**.
+
+**Planned route:** `/rota/availability` (protected, inside `AppLayout`) — *was implemented, then deleted*  
 **Planned source:** `src/pages/RotaAvailabilityPage.tsx`  
 **Feature toggle:** `src/config/features.ts` → `ENABLE_ROTA_AVAILABILITY_PAGE` (set `false` to hide route + nav; or comment out the marked blocks in `App.tsx` / `AppLayout.tsx`)  
 **Data (planned):** `src/data/rotaAvailability.ts` — slot ids + labels; reuse `JALSA_DAYS` / `jalsaDaySelectLabel` from `src/model/incident.ts`  
@@ -15,7 +17,7 @@ The feature should land with **two** engineering markdown docs, **aligned with p
 | File | Role |
 |------|------|
 | [`plan/RotaAvailabilityPage.md`](RotaAvailabilityPage.md) | **Plan + spec** — toggle, shift model, what3words rules, persistence shape, removal, checklist, diagrams. Stays in `plan/` as the source of truth for *what we intended* and how to disable/delete the feature. |
-| [`readme_page/RotaAvailabilityPage.md`](../readme_page/RotaAvailabilityPage.md) | **Built-page reference** — same pattern as [`readme_page/IncidentLogPage.md`](../readme_page/IncidentLogPage.md) / [`LoginPage.md`](../readme_page/LoginPage.md): route, source files, feature flag, purpose, UI control tables, `localStorage` key, export, errors. Updated when code exists so it documents *what shipped*. |
+| *(removed)* | Built-page readme `readme_page/RotaAvailabilityPage.md` was deleted with the feature. |
 
 ### PM / product documentation
 
@@ -43,9 +45,10 @@ Collect **per-person availability** for the **Jalsa weekend POC** (same dates as
 |------|--------|
 | Morning | `08:00–14:00` (6 h) |
 | Afternoon | `14:00–20:00` (6 h) |
-| Night | `20:00–08:00` (12 h, into **next calendar day** — label clearly, e.g. “Friday night — 20:00 Fri → 08:00 Sat”) |
+| Evening | `20:00–02:00` (6 h, into **next calendar day**) |
+| Early | `02:00–08:00` (6 h, ends at main day start) |
 
-For each Jalsa day, the form offers **two day checkboxes + one night checkbox** (three per day).
+For each rota day, the form offers **four 6 h checkboxes**, anchored from 08:00.
 
 ## Geotagging (what3words)
 

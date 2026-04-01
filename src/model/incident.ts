@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { getActiveEvent } from "../data/events";
 
 /**
  * Stored / API values for incident category (must match server Zod + DB).
@@ -43,18 +44,29 @@ export const SEVERITY_LEVELS = ["Low", "Medium", "High"] as const;
 export const incidentTypeSchema = z.enum(INCIDENT_TYPE_CODES);
 export const severitySchema = z.enum(SEVERITY_LEVELS);
 
-/** Allowed incident dates — keep in sync with the report form `<select>`. */
-export const JALSA_DAYS = ["2026-07-24", "2026-07-25", "2026-07-26"] as const;
-export const jalsaDaySchema = z.enum(JALSA_DAYS);
+/**
+ * Allowed incident dates for the **active event** — driven by `src/data/events.ts`
+ * and `EVENT_ID` / `VITE_EVENT_ID`. Keep report form `<select>` in sync.
+ */
+const _activeEvent = getActiveEvent();
+export const JALSA_DAYS = _activeEvent.dates;
 
-const JALSA_DAY_LABEL: Record<(typeof JALSA_DAYS)[number], string> = {
-  "2026-07-24": "Fri 24 Jul 2026",
-  "2026-07-25": "Sat 25 Jul 2026",
-  "2026-07-26": "Sun 26 Jul 2026",
-};
+if (JALSA_DAYS.length === 0) {
+  throw new Error("Active event must define at least one date in src/data/events.ts");
+}
 
-export function jalsaDaySelectLabel(iso: (typeof JALSA_DAYS)[number]): string {
-  return JALSA_DAY_LABEL[iso];
+export const jalsaDaySchema = z.enum(JALSA_DAYS as unknown as [string, ...string[]]);
+
+export function jalsaDaySelectLabel(iso: string): string {
+  if (!(JALSA_DAYS as readonly string[]).includes(iso)) {
+    return iso;
+  }
+  return new Date(iso + "T12:00:00").toLocaleDateString("en-GB", {
+    weekday: "short",
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  });
 }
 
 /** Main site areas — Islamabad UK Jalsa (adjust list as needed). */
@@ -95,6 +107,43 @@ const reporterNameRequired = z
   .trim()
   .min(1, "Enter your name")
   .max(200);
+
+const departmentRequired = z
+  .string()
+  .trim()
+  .min(1, "Enter your department or team")
+  .max(300);
+
+/** Normalise optional what3words: trim, strip /// prefix, lowercase words. */
+export function normalizeIncidentW3w(raw: string): string {
+  return raw
+    .trim()
+    .replace(/^\/\/\//, "")
+    .trim()
+    .toLowerCase();
+}
+
+const W3W_THREE_WORDS =
+  /^[a-z]{1,}[a-z0-9]*\.[a-z]{1,}[a-z0-9]*\.[a-z]{1,}[a-z0-9]*$/;
+
+/** True when the value looks like a full ///three.word.address (for enabling Verify in the UI). */
+export function isPlausibleIncidentW3w(raw: string): boolean {
+  const t = normalizeIncidentW3w(raw);
+  if (!t) return false;
+  return W3W_THREE_WORDS.test(t);
+}
+
+const incidentW3wOptional = z
+  .union([z.string().max(100), z.literal(""), z.undefined()])
+  .transform((s) => {
+    if (s === undefined || s === "") return undefined;
+    const t = normalizeIncidentW3w(s);
+    return t.length === 0 ? undefined : t;
+  })
+  .refine(
+    (s) => s === undefined || W3W_THREE_WORDS.test(s),
+    { message: "Use three words like index.home.raft" },
+  );
 
 /** Max photos per incident report (DB + UI). */
 export const INCIDENT_IMAGE_URL_MAX = 8;
@@ -143,6 +192,8 @@ const incidentFieldsBase = {
     .min(1, "Record actions taken (even if still in progress)")
     .max(8000),
   reporter_name: reporterNameRequired,
+  department: departmentRequired,
+  incident_w3w: incidentW3wOptional,
 };
 
 export const incidentFieldsSchema = z.object(incidentFieldsBase);
@@ -170,6 +221,8 @@ export type IncidentDraft = {
   description: string;
   actions_taken: string;
   reporter_name: string;
+  department: string;
+  incident_w3w: string;
   /** Already-uploaded Blob URLs; pending local `File`s stay in component state only. */
   image_urls: string[];
 };
@@ -184,6 +237,8 @@ export function emptyIncidentDraft(): IncidentDraft {
     description: "",
     actions_taken: "",
     reporter_name: "",
+    department: "",
+    incident_w3w: "",
     image_urls: [],
   };
 }
@@ -198,6 +253,8 @@ export const incidentDraftStorageSchema = z.object({
   description: z.string().max(8000),
   actions_taken: z.string().max(8000),
   reporter_name: z.string().max(200),
+  department: z.string().max(300).optional().default(""),
+  incident_w3w: z.string().max(100).optional().default(""),
   image_urls: z.array(z.string().max(2048)).max(INCIDENT_IMAGE_URL_MAX).optional().default([]),
 });
 
@@ -212,6 +269,8 @@ export function isIncidentDraftEmpty(d: IncidentDraft): boolean {
     d.description === e.description &&
     d.actions_taken === e.actions_taken &&
     d.reporter_name === e.reporter_name &&
+    d.department === e.department &&
+    d.incident_w3w === e.incident_w3w &&
     d.image_urls.length === 0
   );
 }
@@ -243,6 +302,8 @@ export function parseStoredIncidentDraft(data: unknown): IncidentDraft | null {
     description: raw.description,
     actions_taken: raw.actions_taken,
     reporter_name: raw.reporter_name,
+    department: raw.department ?? "",
+    incident_w3w: raw.incident_w3w ?? "",
     image_urls,
   };
 }
@@ -259,6 +320,8 @@ export type IncidentRow = {
   actions_taken: string | null;
   reporter_name: string | null;
   reporter_contact: string | null;
+  department: string | null;
+  incident_w3w: string | null;
   image_urls: string[];
 };
 
@@ -274,6 +337,8 @@ export const INCIDENT_CSV_COLUMNS = [
   "actions_taken",
   "reporter_name",
   "reporter_contact",
+  "department",
+  "incident_w3w",
   "image_urls",
 ] as const;
 

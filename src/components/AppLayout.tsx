@@ -1,16 +1,32 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Link, NavLink, Outlet } from "react-router-dom";
 import { useAuth } from "../auth/useAuth";
+import {
+  ENABLE_TRAINING_MODULE,
+  ENABLE_VENUE_CHECKLIST,
+} from "../config/features";
+import { formatEventHeaderSubtitle, getActiveEvent } from "../data/events";
 
-const nav = [
+const navBaseBeforeReport = [
   { to: "/", label: "Team" },
   { to: "/rota", label: "Rota" },
+] as const;
+const navTraining = { to: "/training", label: "Training" } as const;
+const navVenue = { to: "/venue-checklist", label: "Venue" } as const;
+const navRest = [
   { to: "/incidents", label: "Report" },
   { to: "/incidents/log", label: "Log" },
   { to: "/map", label: "Map" },
   { to: "/help", label: "Help" },
   { to: "/roles", label: "Roles" },
-];
+] as const;
+
+const adminNav = [
+  ...navBaseBeforeReport,
+  ...(ENABLE_TRAINING_MODULE ? [navTraining] : []),
+  ...(ENABLE_VENUE_CHECKLIST ? [navVenue] : []),
+  ...navRest,
+] as const;
 
 const linkClass = ({ isActive }: { isActive: boolean }) =>
   `block min-h-11 min-w-11 content-center rounded-lg px-4 py-3 text-center text-base font-medium transition-colors sm:inline-block sm:py-2 ${
@@ -20,19 +36,34 @@ const linkClass = ({ isActive }: { isActive: boolean }) =>
   }`;
 
 export function AppLayout() {
-  const { logout } = useAuth();
+  const { logout, role } = useAuth();
   const [open, setOpen] = useState(false);
+  const activeEvent = getActiveEvent();
+
+  const nav = useMemo(() => {
+    if (role === "user") {
+      const items: { readonly to: string; readonly label: string }[] = [
+        { to: "/incidents", label: "Report" },
+      ];
+      if (ENABLE_TRAINING_MODULE) items.push(navTraining);
+      items.push({ to: "/help", label: "Help" });
+      return items;
+    }
+    return adminNav;
+  }, [role]);
+
+  const homeLink = role === "user" ? "/incidents" : "/";
 
   return (
     <div className="min-h-screen bg-slate-50 pb-[calc(5.25rem+env(safe-area-inset-bottom,0px))] sm:pb-8">
       <header className="sticky top-0 z-50 border-b border-slate-200 bg-white/95 backdrop-blur">
         <div className="mx-auto flex max-w-3xl items-center justify-between gap-2 px-4 py-3">
-          <Link to="/" className="min-w-0 flex-1">
+          <Link to={homeLink} className="min-w-0 flex-1">
             <span className="block truncate text-sm font-semibold text-slate-900">
-              Jalsa 2026 · Fire &amp; Safety
+              {activeEvent.shortLabel}
             </span>
             <span className="block truncate text-xs text-slate-500">
-              24–26 July · Islamabad, UK
+              {formatEventHeaderSubtitle(activeEvent)}
             </span>
           </Link>
           <button

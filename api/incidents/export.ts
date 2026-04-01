@@ -3,7 +3,7 @@ import {
   formatIncidentExportFilename,
   rowsToCsv,
 } from "../../src/model/incident.js";
-import { isAuthenticated } from "../lib/auth.js";
+import { getRole } from "../lib/auth.js";
 import { getSql } from "../lib/neon.js";
 import { mapRow } from "../lib/incident-map.js";
 
@@ -13,8 +13,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return;
   }
 
-  if (!(await isAuthenticated(req))) {
+  const role = await getRole(req);
+  if (!role) {
     res.status(401).json({ error: "Unauthorized" });
+    return;
+  }
+
+  if (role !== "admin") {
+    res.status(403).json({ error: "Forbidden" });
     return;
   }
 
@@ -23,7 +29,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const rows = await sql`
       SELECT id, created_at, incident_date::text AS incident_date, incident_time,
              incident_type, severity, location, description, actions_taken,
-             reporter_name, reporter_contact, image_urls
+             reporter_name, reporter_contact, department, incident_w3w, image_urls
       FROM incidents
       ORDER BY id ASC
     `;
