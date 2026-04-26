@@ -3,9 +3,9 @@ import {
   formatIncidentExportFilename,
   rowsToCsv,
 } from "../../src/model/incident.js";
-import { getRole } from "../lib/auth.js";
-import { getSql } from "../lib/neon.js";
-import { mapRow } from "../lib/incident-map.js";
+import { getRole } from "../../server/lib/auth.js";
+import { getSql } from "../../server/lib/neon.js";
+import { mapRow } from "../../server/lib/incident-map.js";
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== "GET") {

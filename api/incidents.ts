@@ -1,9 +1,9 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 import { ZodError } from "zod";
 import { incidentCreateSchema } from "../src/model/incident.js";
-import { getRole } from "./lib/auth.js";
-import { mapRow } from "./lib/incident-map.js";
-import { getSql } from "./lib/neon.js";
+import { getRole } from "../server/lib/auth.js";
+import { mapRow } from "../server/lib/incident-map.js";
+import { getSql } from "../server/lib/neon.js";
 
 function incidentDbHttpBody(e: unknown): { error: string; hint?: string } {
   const code =

@@ -3,7 +3,7 @@ import {
   createSessionToken,
   setSessionCookie,
   type SessionRole,
-} from "./lib/session.js";
+} from "../server/lib/session.js";
 
 /** Fixed POC gate - not overridable via env; only this value is accepted. */
 const LOGIN_PASSWORD = "1234";

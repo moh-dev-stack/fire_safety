@@ -1,6 +1,6 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 import { handleUpload, type HandleUploadBody } from "@vercel/blob/client";
-import { isAuthenticated } from "../lib/auth.js";
+import { isAuthenticated } from "../../server/lib/auth.js";
 
 const ALLOWED_CONTENT_TYPES = [
   "image/jpeg",

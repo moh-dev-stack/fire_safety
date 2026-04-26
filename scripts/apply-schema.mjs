@@ -32,7 +32,7 @@ function loadEnvLocal() {
 
 loadEnvLocal();
 
-/** Same resolution as api/lib/neon.ts so migrations hit the DB the app uses. */
+/** Same resolution as server/lib/neon.ts so migrations hit the DB the app uses. */
 function resolveDatabaseUrl() {
   const candidates = [
     process.env.DATABASE_URL,

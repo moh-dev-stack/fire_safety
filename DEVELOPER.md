@@ -70,7 +70,7 @@ npm run dev:vite
 | `src/` | React app (pages, components, auth, `model/incident.ts`) |
 | `src/data/team.ts`, `src/data/rota.ts` | Editable **team** and **rota** content (placeholders in v1) |
 | `api/` | Vercel Serverless handlers (`login`, `logout`, `me`, `incidents`, `incidents/export`, `cron/snapshot-incidents`) |
-| `api/lib/` | DB (Neon), session cookie, auth helper, row mapping |
+| `server/lib/` | DB (Neon), session cookie, auth helper, row mapping (lives **outside** `api/` so Vercel does not count it as a Serverless Function) |
 | `sql/schema.sql` | Postgres DDL for `incidents` |
 | `vercel.json` | SPA rewrite, build output |
 
@@ -117,7 +117,7 @@ Single source of truth: **[`src/model/incident.ts`](src/model/incident.ts)**.
 - **Required** `department` (free text); **optional** `incident_w3w` (what3words); **`incident_date`** must be one of the active event’s `JALSA_DAYS` (default event: 24–26 July 2026).
 - **`image_urls`** — optional array of HTTPS URLs on the `*.public.blob.vercel-storage.com` host (max **8**), populated after client upload.
 
-To add a field: update Zod schema, `sql/schema.sql` (migration), `mapRow` in `api/lib/incident-map.ts`, form/UI, and `INCIDENT_CSV_COLUMNS`.
+To add a field: update Zod schema, `sql/schema.sql` (migration), `mapRow` in `server/lib/incident-map.ts`, form/UI, and `INCIDENT_CSV_COLUMNS`.
 
 ## Content maintenance
 
@@ -125,6 +125,8 @@ To add a field: update Zod schema, `sql/schema.sql` (migration), `mapRow` in `ap
 - **Rota:** edit [`src/data/rota.ts`](src/data/rota.ts).
 
 ## Deploy to Vercel
+
+**Hobby plan:** Vercel allows **at most 12 Serverless Functions** per deployment. This repo only exposes route handlers under `api/**` (shared code is under `server/lib/` and does **not** count as separate functions). If you add new `api/**/*.ts` routes, stay under 12 on Hobby or use a [team / Pro](https://vercel.com/docs/plans) plan.
 
 1. Connect the Git repository.
 2. Framework preset: **Vite** (or use existing `vercel.json` `buildCommand` / `outputDirectory`).

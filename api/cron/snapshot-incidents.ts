@@ -1,8 +1,8 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 import { put } from "@vercel/blob";
 import { rowsToCsv } from "../../src/model/incident.js";
-import { getSql } from "../lib/neon.js";
-import { mapRow } from "../lib/incident-map.js";
+import { getSql } from "../../server/lib/neon.js";
+import { mapRow } from "../../server/lib/incident-map.js";
 
 function isAuthorizedCron(req: VercelRequest): boolean {
   const secret = process.env.CRON_SECRET;
