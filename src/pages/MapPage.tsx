@@ -3,7 +3,7 @@ import { useEffect } from "react";
 import { MapContainer, Marker, Popup, TileLayer, useMap } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 
-/** Approximate Jalsa site — Islamabad, UK (Surrey) */
+/** Approximate Jalsa site - Islamabad, UK (Surrey) */
 const VENUE: [number, number] = [51.1817, -0.7535];
 const DEFAULT_ZOOM = 15;
 
@@ -64,7 +64,7 @@ export function MapPage() {
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
           />
           <Marker position={VENUE}>
-            <Popup>Islamabad, UK — Jalsa Salana venue (approx.)</Popup>
+            <Popup>Islamabad, UK - Jalsa Salana venue (approx.)</Popup>
           </Marker>
         </MapContainer>
       </div>

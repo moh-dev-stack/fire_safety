@@ -2,8 +2,31 @@ import { cleanup, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { MemoryRouter } from "react-router-dom";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { AuthContext, type AuthContextValue } from "../auth/auth-context";
+import { ActiveEventProvider } from "../context/ActiveEventContext";
 import type { IncidentRow } from "../model/incident";
 import { IncidentLogPage } from "./IncidentLogPage";
+
+const logPageAuth: AuthContextValue = {
+  ready: true,
+  authenticated: true,
+  role: "admin",
+  login: vi.fn(),
+  logout: vi.fn(),
+  refresh: vi.fn(),
+};
+
+function renderLog() {
+  return render(
+    <AuthContext.Provider value={logPageAuth}>
+      <ActiveEventProvider>
+        <MemoryRouter>
+          <IncidentLogPage />
+        </MemoryRouter>
+      </ActiveEventProvider>
+    </AuthContext.Provider>,
+  );
+}
 
 describe("IncidentLogPage", () => {
   const fetchMock = vi.fn();
@@ -12,6 +35,7 @@ describe("IncidentLogPage", () => {
     {
       id: 1,
       created_at: "2026-07-24T12:00:00.000Z",
+      event_id: "jalsa-2026-islamabad",
       incident_date: "2026-07-24",
       incident_time: "10:30",
       incident_type: "Other",
@@ -22,7 +46,6 @@ describe("IncidentLogPage", () => {
       reporter_name: "Patrol",
       reporter_contact: null,
       department: "Patrol north",
-      incident_w3w: "filled.count.soak",
       image_urls: [
         "https://ex.public.blob.vercel-storage.com/unique-segment-a/photo1.png",
         "https://ex.public.blob.vercel-storage.com/unique-segment-b/photo2.png",
@@ -50,11 +73,7 @@ describe("IncidentLogPage", () => {
   });
 
   it("shows a photos region and enlarge buttons when image_urls are set", async () => {
-    render(
-      <MemoryRouter>
-        <IncidentLogPage />
-      </MemoryRouter>,
-    );
+    renderLog();
 
     await waitFor(() => {
       expect(screen.getByRole("region", { name: /incident #1 photos/i })).toBeInTheDocument();
@@ -66,11 +85,7 @@ describe("IncidentLogPage", () => {
 
   it("opens a lightbox and returns with Back to log", async () => {
     const user = userEvent.setup();
-    render(
-      <MemoryRouter>
-        <IncidentLogPage />
-      </MemoryRouter>,
-    );
+    renderLog();
 
     await waitFor(() => {
       expect(screen.getByRole("region", { name: /incident #1 photos/i })).toBeInTheDocument();
@@ -94,11 +109,7 @@ describe("IncidentLogPage", () => {
 
   it("filters rows when search matches a substring of an image URL", async () => {
     const user = userEvent.setup();
-    render(
-      <MemoryRouter>
-        <IncidentLogPage />
-      </MemoryRouter>,
-    );
+    renderLog();
 
     await waitFor(() => {
       expect(screen.getByText(/Smoke near tent/i)).toBeInTheDocument();

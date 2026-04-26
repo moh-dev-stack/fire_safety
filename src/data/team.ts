@@ -3,7 +3,7 @@ export type TeamGroup = {
   body: string;
 };
 
-/** Three organisational layers only — no individual names or contact details. */
+/** Three organisational layers only - no individual names or contact details. */
 export const teamGroups: TeamGroup[] = [
   {
     title: "Kek Fire and Safety Team",

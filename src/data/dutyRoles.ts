@@ -1,4 +1,4 @@
-/** Operational / volunteer role descriptions — edit copy for your Jalsa team. */
+/** Operational / volunteer role descriptions - edit copy for your Jalsa team. */
 
 export type DutyRole = {
   title: string;

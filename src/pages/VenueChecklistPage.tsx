@@ -17,7 +17,7 @@ const STAFF_NAME_KEY = "fire-safety-venue-checklist-staff-name-v1";
 
 type RowState = {
   done: boolean;
-  /** Legacy submissions only — per-item comments are no longer collected. */
+  /** Legacy submissions only - per-item comments are no longer collected. */
   comment?: string;
 };
 
@@ -396,7 +396,7 @@ export function VenueChecklistPage() {
               id="vc_staff"
               value={staffName}
               onChange={(e) => setStaffName(e.target.value)}
-              placeholder="e.g. A. Khan — morning duty"
+              placeholder="e.g. A. Khan - morning duty"
               className="mt-2 w-full max-w-lg min-h-11 rounded-lg border border-slate-300 px-3 py-2 text-base"
               autoComplete="name"
             />
@@ -417,7 +417,7 @@ export function VenueChecklistPage() {
             </h2>
             <p className="mt-3 text-sm text-slate-600">{VENUE_CHECKLIST_SCOPE[venueId]}</p>
             <p className="mt-1 text-xs font-medium text-slate-500">
-              {venueItems.length} checklist {venueItems.length === 1 ? "item" : "items"} — only for{" "}
+              {venueItems.length} checklist {venueItems.length === 1 ? "item" : "items"} - only for{" "}
               {venueLabel}
             </p>
             <ul className="mt-4 space-y-3">
@@ -447,7 +447,7 @@ export function VenueChecklistPage() {
               Notes / comments (optional)
             </label>
             <p className="mt-1 text-xs text-slate-500">
-              Submit time is saved automatically. Use this box for optional context — walk-round time,
+              Submit time is saved automatically. Use this box for optional context - walk-round time,
               who was present, or other observations.
             </p>
             <textarea
@@ -455,7 +455,7 @@ export function VenueChecklistPage() {
               value={generalNotes}
               onChange={(e) => setGeneralNotes(e.target.value)}
               rows={3}
-              placeholder="Optional — your own notes for this submission."
+              placeholder="Optional - your own notes for this submission."
               className="mt-2 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
             />
           </div>
@@ -542,7 +542,7 @@ function SubmissionReadOnly({ sub }: { sub: VenueChecklistSubmission }) {
       </p>
       {!sub.venueId ? (
         <p className="text-xs font-medium uppercase tracking-wide text-amber-900">
-          Legacy submission — multiple venue areas in one snapshot
+          Legacy submission - multiple venue areas in one snapshot
         </p>
       ) : null}
       {sub.generalNotes ? (

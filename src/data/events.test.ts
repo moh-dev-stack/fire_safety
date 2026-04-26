@@ -7,8 +7,9 @@ import {
 } from "./events";
 
 describe("events catalogue", () => {
-  it("lists at least default + two test events", () => {
-    expect(EVENT_CATALOG.length).toBeGreaterThanOrEqual(3);
+  it("lists Jalsa 2025/2026 + test events", () => {
+    expect(EVENT_CATALOG.length).toBeGreaterThanOrEqual(4);
+    expect(getEventById("jalsa-2025-islamabad")).toBeDefined();
     expect(getEventById("jalsa-2026-islamabad")).toBeDefined();
     expect(getEventById("test-fire-drill-mar-2026")?.dates).toEqual([
       "2026-03-14",

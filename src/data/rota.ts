@@ -21,24 +21,24 @@ export const rotaDays: readonly RotaDay[] = [
       {
         time: "08:00–14:00",
         people: "Person A, Person B",
-        notes: "Day shift 1 — site opening and morning coverage",
+        notes: "Day shift 1 - site opening and morning coverage",
       },
       {
         time: "14:00–20:00",
         people: "Person B, Person C",
-        notes: "Day shift 2 — afternoon peak",
+        notes: "Day shift 2 - afternoon peak",
       },
     ],
     nightShifts: [
       {
         time: "20:00–02:00",
         people: "Person C, Person A",
-        notes: "Night shift 1 — evening handover and late site",
+        notes: "Night shift 1 - evening handover and late site",
       },
       {
         time: "02:00–08:00",
         people: "Person A, Person B",
-        notes: "Night shift 2 — early hours (into Saturday morning)",
+        notes: "Night shift 2 - early hours (into Saturday morning)",
       },
     ],
   },
@@ -49,24 +49,24 @@ export const rotaDays: readonly RotaDay[] = [
       {
         time: "08:00–14:00",
         people: "Person C, Person A",
-        notes: "Day shift 1 — main Jalsa day",
+        notes: "Day shift 1 - main Jalsa day",
       },
       {
         time: "14:00–20:00",
         people: "Person A, Person B",
-        notes: "Day shift 2 — afternoon / evening transition",
+        notes: "Day shift 2 - afternoon / evening transition",
       },
     ],
     nightShifts: [
       {
         time: "20:00–02:00",
         people: "Person B, Person C",
-        notes: "Night shift 1",
+        notes: "Night shift 1 - evening handover and late site",
       },
       {
         time: "02:00–08:00",
         people: "Person C, Person A",
-        notes: "Night shift 2 — early hours (into Sunday morning)",
+        notes: "Night shift 2 - early hours (into Sunday morning)",
       },
     ],
   },
@@ -77,24 +77,24 @@ export const rotaDays: readonly RotaDay[] = [
       {
         time: "08:00–14:00",
         people: "Person B, Person A",
-        notes: "Day shift 1 — final day morning",
+        notes: "Day shift 1 - final day morning",
       },
       {
         time: "14:00–20:00",
         people: "Person C, Person B",
-        notes: "Day shift 2 — wind-down and departures",
+        notes: "Day shift 2 - wind-down and departures",
       },
     ],
     nightShifts: [
       {
         time: "20:00–23:00",
         people: "Person A, Person C",
-        notes: "Night shift 1 — site close support (shortened)",
+        notes: "Night shift 1 - site close support (shortened)",
       },
       {
         time: "23:00–02:00",
         people: "Person A, Person B",
-        notes: "Night shift 2 — lock-up / security (where applicable)",
+        notes: "Night shift 2 - lock-up / security (where applicable)",
       },
     ],
   },

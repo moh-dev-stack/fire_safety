@@ -6,7 +6,7 @@ export function postLoginPath(
 ): string {
   if (role === "user") {
     const blocked = new Set([
-      "/",
+      "/team",
       "/rota",
       "/venue-checklist",
       "/incidents/log",
@@ -14,7 +14,7 @@ export function postLoginPath(
       "/roles",
     ]);
     if (from && from !== "/login" && !blocked.has(from)) return from;
-    return "/incidents";
+    return "/";
   }
   return from && from !== "/login" ? from : "/";
 }

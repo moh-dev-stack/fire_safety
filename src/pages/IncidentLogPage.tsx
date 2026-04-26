@@ -3,7 +3,6 @@ import { Link } from "react-router-dom";
 import {
   INCIDENT_TYPE_CODES,
   INCIDENT_TYPE_LABELS,
-  JALSA_DAYS,
   SEVERITY_LEVELS,
   SITE_LOCATIONS,
   jalsaDaySelectLabel,
@@ -11,6 +10,7 @@ import {
   type IncidentTypeCode,
 } from "../model/incident";
 import * as api from "../lib/api";
+import { useActiveEvent } from "../context/ActiveEventContext";
 
 function rowMatchesSearch(row: IncidentRow, q: string): boolean {
   if (!q) return true;
@@ -26,9 +26,9 @@ function rowMatchesSearch(row: IncidentRow, q: string): boolean {
     row.reporter_name ?? "",
     row.reporter_contact ?? "",
     row.department ?? "",
-    row.incident_w3w ?? "",
     row.incident_date ?? "",
     row.incident_time ?? "",
+    row.event_id,
     row.image_urls.join(" "),
   ]
     .join(" ")
@@ -161,6 +161,9 @@ function IncidentPhotoThumb({
 }
 
 export function IncidentLogPage() {
+  const { event, eventId } = useActiveEvent();
+  const jalsaDays = event.dates;
+
   const [rows, setRows] = useState<IncidentRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [downloading, setDownloading] = useState(false);
@@ -172,30 +175,36 @@ export function IncidentLogPage() {
   const [search, setSearch] = useState("");
   const [filterType, setFilterType] = useState<"" | IncidentTypeCode>("");
   const [filterSeverity, setFilterSeverity] = useState<"" | (typeof SEVERITY_LEVELS)[number]>("");
-  const [filterDate, setFilterDate] = useState<"" | (typeof JALSA_DAYS)[number]>("");
+  const [filterDate, setFilterDate] = useState<string>("");
   const [filterLocation, setFilterLocation] = useState("");
 
   const load = useCallback(async () => {
+    setLoading(true);
     setError(null);
     try {
-      const data = (await api.fetchIncidents()) as IncidentRow[];
+      const data = (await api.fetchIncidents(eventId)) as IncidentRow[];
       setRows(data);
     } catch {
       setError("Could not load incident reports.");
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [eventId]);
 
   useEffect(() => {
     void load();
   }, [load]);
 
+  useEffect(() => {
+    const allow = new Set(jalsaDays as readonly string[]);
+    setFilterDate((fd) => (fd && !allow.has(fd) ? "" : fd));
+  }, [jalsaDays]);
+
   async function onDownloadCsv() {
     setDownloading(true);
     setError(null);
     try {
-      await api.downloadIncidentsCsv();
+      await api.downloadIncidentsCsv(eventId);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Download failed");
     } finally {
@@ -239,9 +248,10 @@ export function IncidentLogPage() {
       <header className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <h1 className="text-2xl font-bold text-slate-900">Incident log</h1>
+          <p className="mt-1 text-sm font-medium text-slate-800">{event.name}</p>
           <p className="mt-1 text-slate-600">
-            All fire &amp; safety reports submitted for Jalsa. Export CSV includes the same fields as
-            below.
+            Fire &amp; safety reports stored for this event (same as the header selector). CSV export
+            matches the list below.
           </p>
         </div>
         <div className="flex flex-col gap-2 sm:flex-row sm:shrink-0">
@@ -326,12 +336,12 @@ export function IncidentLogPage() {
                 <select
                   value={filterDate}
                   onChange={(e) =>
-                    setFilterDate(e.target.value as "" | (typeof JALSA_DAYS)[number])
+                    setFilterDate(e.target.value)
                   }
                   className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-base text-slate-900 shadow-sm focus:border-red-900 focus:outline-none focus:ring-2 focus:ring-red-900/20"
                 >
                   <option value="">All dates</option>
-                  {JALSA_DAYS.map((d) => (
+                  {jalsaDays.map((d) => (
                     <option key={d} value={d}>
                       {jalsaDaySelectLabel(d)}
                     </option>
@@ -418,7 +428,7 @@ export function IncidentLogPage() {
                   {r.severity ? ` · ${r.severity}` : ""}
                 </p>
                 <p className="mt-1 text-sm text-slate-600">
-                  {r.incident_date ?? "—"}
+                  {r.incident_date ?? "-"}
                   {r.incident_time ? ` · ${r.incident_time}` : ""}
                 </p>
                 <p className="mt-1 font-medium text-slate-900">{r.location}</p>
@@ -430,27 +440,13 @@ export function IncidentLogPage() {
                 ) : null}
                 <p className="mt-2 text-xs text-slate-500">
                   <span className="font-medium text-slate-600">Reporter:</span>{" "}
-                  {r.reporter_name ?? "—"}
+                  {r.reporter_name ?? "-"}
                   {r.reporter_contact ? ` · ${r.reporter_contact}` : ""}
                   {r.department ? (
                     <>
                       <br />
                       <span className="font-medium text-slate-600">Department:</span>{" "}
                       {r.department}
-                    </>
-                  ) : null}
-                  {r.incident_w3w ? (
-                    <>
-                      <br />
-                      <span className="font-medium text-slate-600">what3words:</span>{" "}
-                      <a
-                        href={`https://what3words.com/${encodeURIComponent(r.incident_w3w)}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="font-mono text-red-900 underline"
-                      >
-                        {r.incident_w3w}
-                      </a>
                     </>
                   ) : null}
                 </p>

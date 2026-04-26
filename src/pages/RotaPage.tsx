@@ -38,7 +38,7 @@ export function RotaPage() {
         <h1 className="text-2xl font-bold text-slate-900">Duty rota</h1>
         <p className="mt-1 text-slate-600">
           Two <strong>day</strong> shifts and two <strong>night</strong> shifts per day (placeholder
-          names and times — replace with your final rota).
+          names and times - replace with your final rota).
         </p>
       </header>
       <div className="space-y-6">

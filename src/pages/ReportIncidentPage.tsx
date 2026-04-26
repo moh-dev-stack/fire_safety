@@ -6,7 +6,6 @@ import {
   INCIDENT_TIME_SLOTS,
   INCIDENT_TYPE_CODES,
   INCIDENT_TYPE_LABELS,
-  JALSA_DAYS,
   SEVERITY_LEVELS,
   SITE_LOCATIONS,
   emptyIncidentDraft,
@@ -29,8 +28,11 @@ import {
   saveLocalIncidentDraft,
 } from "../lib/incident-draft-local";
 import { formatFlattenedZodError } from "../lib/format-validation";
+import { useActiveEvent } from "../context/ActiveEventContext";
 
 export function ReportIncidentPage() {
+  const { event, eventId } = useActiveEvent();
+
   const [form, setForm] = useState<IncidentDraft>(() => emptyIncidentDraft());
   /** Selected files not yet uploaded (not stored in draft). */
   const [pendingFiles, setPendingFiles] = useState<File[]>([]);
@@ -57,7 +59,7 @@ export function ReportIncidentPage() {
           serverTime = r.updated_at ? Date.parse(r.updated_at) : 0;
         }
       } catch {
-        /* API unreachable — use browser draft only */
+        /* API unreachable - use browser draft only */
       }
       if (cancelled) return;
       const localTime = local?.savedAt ?? 0;
@@ -79,6 +81,15 @@ export function ReportIncidentPage() {
       cancelled = true;
     };
   }, []);
+
+  useEffect(() => {
+    const allowed = new Set(event.dates);
+    setForm((f) =>
+      f.incident_date && !allowed.has(f.incident_date)
+        ? { ...f, incident_date: "" }
+        : f,
+    );
+  }, [event.id, event.dates]);
 
   useEffect(() => {
     if (!draftNotice) return;
@@ -122,6 +133,7 @@ export function ReportIncidentPage() {
       }
 
       const payload = incidentCreateSchema.parse({
+        event_id: eventId,
         incident_date: form.incident_date,
         incident_time: form.incident_time,
         incident_type: form.incident_type,
@@ -131,7 +143,6 @@ export function ReportIncidentPage() {
         actions_taken: form.actions_taken.trim(),
         reporter_name: form.reporter_name,
         department: form.department,
-        incident_w3w: form.incident_w3w.trim() || undefined,
         image_urls,
       });
 
@@ -163,11 +174,11 @@ export function ReportIncidentPage() {
           <h1 className="text-2xl font-bold text-slate-900">
             Report a fire &amp; safety incident
           </h1>
+          <p className="mt-1 text-sm font-medium text-slate-800">{event.name}</p>
           <p className="mt-1 text-slate-600">
             Use this duty form for alarms, evacuations, medical events, hazards, and
             crowd-safety issues on site. Date, time, location, category, severity, description,
-            actions, your name, and department or team are required. Optional what3words (three
-            words) can pin the incident on site — enter manually if you use it. You can add up to {INCIDENT_IMAGE_URL_MAX} optional
+            actions, your name, and department or team are required. You can add up to {INCIDENT_IMAGE_URL_MAX} optional
             photos (stored on Vercel Blob). While you type, your draft is saved to this device and
             to the database (when signed in); new file picks are kept in the browser until you
             submit.
@@ -222,7 +233,7 @@ export function ReportIncidentPage() {
                 className="mt-1 w-full min-h-11 rounded-lg border border-slate-300 px-3 py-2 text-base"
               >
                 <option value="">Select day</option>
-                {JALSA_DAYS.map((d) => (
+                {event.dates.map((d) => (
                   <option key={d} value={d}>
                     {jalsaDaySelectLabel(d)}
                   </option>
@@ -476,42 +487,13 @@ export function ReportIncidentPage() {
                 onChange={(e) =>
                   setForm((f) => ({ ...f, department: e.target.value }))
                 }
-                placeholder="Free text — e.g. Fire marshal team A, Catering H&S"
+                placeholder="Free text - e.g. Fire marshal team A, Catering H&S"
                 className="mt-1 w-full min-h-11 rounded-lg border border-slate-300 px-3 py-2 text-base"
               />
               <p className="mt-1 text-xs text-slate-500">
                 Short label for your duty area or team (not a fixed list).
               </p>
             </div>
-          </div>
-
-          <div>
-            <label htmlFor="incident_w3w" className="block text-sm font-medium text-slate-700">
-              what3words address (optional)
-            </label>
-            <input
-              id="incident_w3w"
-              value={form.incident_w3w}
-              onChange={(e) =>
-                setForm((f) => ({ ...f, incident_w3w: e.target.value }))
-              }
-              placeholder="e.g. index.home.raft"
-              autoComplete="off"
-              aria-describedby="incident_w3w_help"
-              className="mt-1 min-h-11 w-full rounded-lg border border-slate-300 px-3 py-2 text-base"
-            />
-            <p id="incident_w3w_help" className="mt-1 text-xs text-slate-500">
-              Optional. Look up words on{" "}
-              <a
-                href="https://what3words.com/"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="font-medium text-red-900 underline"
-              >
-                what3words.com
-              </a>{" "}
-              and paste here (validated on submit). Leave blank if not used.
-            </p>
           </div>
 
           <button

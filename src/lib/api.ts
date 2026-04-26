@@ -78,8 +78,9 @@ export async function me(): Promise<MeResult> {
   return { ok: false };
 }
 
-export async function fetchIncidents() {
-  const res = await apiFetch("/api/incidents");
+export async function fetchIncidents(eventId: string) {
+  const q = new URLSearchParams({ event_id: eventId });
+  const res = await apiFetch(`/api/incidents?${q}`);
   if (!res.ok) throw new Error("Failed to load incidents");
   return res.json();
 }
@@ -152,13 +153,14 @@ export async function createIncident(body: IncidentCreate) {
       );
     }
     const msg = j.error ?? "Save failed";
-    throw new Error(j.hint ? `${msg} — ${j.hint}` : msg);
+    throw new Error(j.hint ? `${msg} - ${j.hint}` : msg);
   }
   return res.json();
 }
 
-export async function downloadIncidentsCsv() {
-  const res = await fetch("/api/incidents/export", { credentials: "include" });
+export async function downloadIncidentsCsv(eventId: string) {
+  const q = new URLSearchParams({ event_id: eventId });
+  const res = await fetch(`/api/incidents/export?${q}`, { credentials: "include" });
   if (!res.ok) throw new Error("Could not download CSV");
   const blob = await res.blob();
   const cd = res.headers.get("Content-Disposition");

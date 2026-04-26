@@ -57,7 +57,7 @@ async function main() {
   console.log(`Smoke API base: ${API}\n`);
 
   if (!process.env.SESSION_SECRET || process.env.SESSION_SECRET.length < 16) {
-    warn("SESSION_SECRET missing or short — login will fail. Set in .env.local.");
+    warn("SESSION_SECRET missing or short - login will fail. Set in .env.local.");
   }
 
   // Health: TCP
@@ -71,7 +71,7 @@ async function main() {
       pass("GET /api/me without cookie → 401");
     }
   } catch (e) {
-    fail(`API not reachable at ${API} — start: npm run dev:api (${e.message})`);
+    fail(`API not reachable at ${API} - start: npm run dev:api (${e.message})`);
     process.exit(1);
   }
 
@@ -151,9 +151,12 @@ async function main() {
     pass("GET /api/incidents/export as user → 403");
   }
 
-  const adminList = await fetch(`${API}/api/incidents`, {
-    headers: { Cookie: adminLogin.cookie },
-  });
+  const adminList = await fetch(
+    `${API}/api/incidents?event_id=jalsa-2026-islamabad`,
+    {
+      headers: { Cookie: adminLogin.cookie },
+    },
+  );
   if (adminList.status === 200) {
     pass("GET /api/incidents as admin → 200");
   } else if (adminList.status === 500) {
@@ -165,9 +168,12 @@ async function main() {
     fail(`GET /api/incidents as admin: unexpected ${adminList.status}`);
   }
 
-  const adminExport = await fetch(`${API}/api/incidents/export`, {
-    headers: { Cookie: adminLogin.cookie },
-  });
+  const adminExport = await fetch(
+    `${API}/api/incidents/export?event_id=jalsa-2026-islamabad`,
+    {
+      headers: { Cookie: adminLogin.cookie },
+    },
+  );
   if (adminExport.status === 200) {
     pass("GET /api/incidents/export as admin → 200");
   } else if (adminExport.status === 500) {
@@ -195,7 +201,7 @@ async function main() {
     pass("POST /api/logout → ok");
   }
 
-  // Logout clears the cookie in browsers; JWT is not server-revoked — same token in `Cookie:` would still work.
+  // Logout clears the cookie in browsers; JWT is not server-revoked - same token in `Cookie:` would still work.
   const afterLogoutNoCookie = await fetch(`${API}/api/me`);
   if (afterLogoutNoCookie.status === 401) {
     pass("GET /api/me with no cookie after logout flow → 401");

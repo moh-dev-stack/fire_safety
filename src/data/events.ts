@@ -1,5 +1,5 @@
 /**
- * Event catalogue for the POC — each entry is an "event" with ISO dates (YYYY-MM-DD)
+ * Event catalogue for the POC - each entry is an "event" with ISO dates (YYYY-MM-DD)
  * used for incident reporting and header copy. Switch the active event via env (see below).
  */
 export type EventDefinition = {
@@ -15,6 +15,13 @@ export type EventDefinition = {
 
 export const EVENT_CATALOG: readonly EventDefinition[] = [
   {
+    id: "jalsa-2025-islamabad",
+    name: "Jalsa Salana 2025 · Islamabad, UK",
+    shortLabel: "Jalsa 2025 · Fire & Safety",
+    venue: "Islamabad, UK",
+    dates: ["2025-07-25", "2025-07-26", "2025-07-27"],
+  },
+  {
     id: "jalsa-2026-islamabad",
     name: "Jalsa Salana 2026 · Islamabad, UK",
     shortLabel: "Jalsa 2026 · Fire & Safety",
@@ -23,21 +30,49 @@ export const EVENT_CATALOG: readonly EventDefinition[] = [
   },
   {
     id: "test-fire-drill-mar-2026",
-    name: "POC — Test fire drill weekend (fictional dates)",
+    name: "POC - Test fire drill weekend (fictional dates)",
     shortLabel: "TEST · Fire drill weekend",
     venue: "Training site (test data)",
     dates: ["2026-03-14", "2026-03-15", "2026-03-16"],
   },
   {
     id: "test-winter-ops-2026",
-    name: "POC — Winter ops rehearsal (fictional dates)",
+    name: "POC - Winter ops rehearsal (fictional dates)",
     shortLabel: "TEST · Winter ops",
     venue: "Northern camp (test data)",
     dates: ["2026-01-10", "2026-01-11"],
   },
 ] as const;
 
+/** Every catalog id (for Zod, API, and the incidents table). */
+export const CATALOG_EVENT_IDS: [string, ...string[]] = [
+  EVENT_CATALOG[0].id,
+  ...EVENT_CATALOG.slice(1).map((e) => e.id),
+];
+
 const DEFAULT_EVENT_ID = "jalsa-2026-islamabad";
+
+/** User tier always uses this event in the UI (no selector). */
+export const USER_FIXED_EVENT_ID = "jalsa-2026-islamabad" as const;
+
+/** Admin can switch the app view between these (order = dropdown order). */
+export const ADMIN_EVENT_SELECTOR_IDS: readonly string[] = [
+  "jalsa-2026-islamabad",
+  "jalsa-2025-islamabad",
+] as const;
+
+/** All on-site days from the catalogue, for API / Zod (any event may be reported). */
+export function getAllCatalogIncidentDates(): [string, ...string[]] {
+  const s = new Set<string>();
+  for (const e of EVENT_CATALOG) {
+    for (const d of e.dates) s.add(d);
+  }
+  const sorted = [...s].sort();
+  if (sorted.length === 0) {
+    return ["1970-01-01"];
+  }
+  return sorted as [string, ...string[]];
+}
 
 /**
  * Active event id: `EVENT_ID` or `VITE_EVENT_ID` from `.env.local` / deploy env, else default.
@@ -90,4 +125,20 @@ export function formatEventHeaderSubtitle(event: EventDefinition): string {
     year: "numeric",
   });
   return `${d1}–${d2} · ${event.venue}`;
+}
+
+/** Human-readable list of on-site days for the event (en-GB). */
+export function formatEventOnSiteDays(event: EventDefinition): string {
+  const sorted = [...event.dates].sort();
+  if (sorted.length === 0) return "No dates in catalogue";
+  return sorted
+    .map((iso) =>
+      new Date(iso + "T12:00:00").toLocaleDateString("en-GB", {
+        weekday: "short",
+        day: "numeric",
+        month: "short",
+        year: "numeric",
+      }),
+    )
+    .join(", ");
 }

@@ -1,9 +1,23 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 import { ZodError } from "zod";
+import {
+  ADMIN_EVENT_SELECTOR_IDS,
+  USER_FIXED_EVENT_ID,
+  getEventById,
+} from "../src/data/events.js";
 import { incidentCreateSchema } from "../src/model/incident.js";
 import { getRole } from "./lib/auth.js";
 import { mapRow } from "./lib/incident-map.js";
 import { getSql } from "./lib/neon.js";
+
+function queryEventId(req: VercelRequest): string | undefined {
+  const raw = req.query?.event_id;
+  if (typeof raw === "string" && raw.length > 0) return raw;
+  if (Array.isArray(raw) && typeof raw[0] === "string" && raw[0].length > 0) {
+    return raw[0];
+  }
+  return undefined;
+}
 
 function incidentDbHttpBody(e: unknown): { error: string; hint?: string } {
   const code =
@@ -58,15 +72,28 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       res.status(403).json({ error: "Forbidden" });
       return;
     }
+    const eventId = queryEventId(req);
+    if (
+      !eventId ||
+      !(ADMIN_EVENT_SELECTOR_IDS as readonly string[]).includes(eventId)
+    ) {
+      res.status(400).json({
+        error: "event_id required",
+        hint: "Pass ?event_id=jalsa-2026-islamabad or jalsa-2025-islamabad (match the header selector).",
+      });
+      return;
+    }
     try {
       const sql = getSql();
-      const rows = await sql`
-        SELECT id, created_at, incident_date::text AS incident_date, incident_time,
-               incident_type, severity, location, description, actions_taken,
-               reporter_name, reporter_contact, department, incident_w3w, image_urls
-        FROM incidents
-        ORDER BY id DESC
-      `;
+      const rows = await sql.query(
+        `SELECT id, created_at, event_id, incident_date::text AS incident_date, incident_time,
+                incident_type, severity, location, description, actions_taken,
+                reporter_name, reporter_contact, department, image_urls
+         FROM incidents
+         WHERE event_id = $1
+         ORDER BY id DESC`,
+        [eventId],
+      );
       const mapped = (rows as Record<string, unknown>[]).map(mapRow);
       res.status(200).json(mapped);
     } catch (e) {
@@ -80,18 +107,40 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       const raw =
         typeof req.body === "string" ? JSON.parse(req.body) : req.body;
       const data = incidentCreateSchema.parse(raw);
+      const effectiveEventId =
+        role === "user" ? USER_FIXED_EVENT_ID : data.event_id;
+      if (
+        role === "admin" &&
+        !(ADMIN_EVENT_SELECTOR_IDS as readonly string[]).includes(effectiveEventId)
+      ) {
+        res.status(400).json({
+          error: "Invalid event",
+          hint: "Choose Jalsa 2025 or 2026 in the header; the report must match that event.",
+        });
+        return;
+      }
+      const ev = getEventById(effectiveEventId);
+      if (!ev || !(ev.dates as readonly string[]).includes(data.incident_date)) {
+        res.status(400).json({
+          error: "Date does not match event",
+          hint: "Pick an on-site date from the list for the selected Jalsa.",
+        });
+        return;
+      }
       const sql = getSql();
       const imageUrlsJson = JSON.stringify(data.image_urls);
       const inserted = await sql.query(
         `INSERT INTO incidents (
+          event_id,
           incident_date, incident_time, incident_type, severity,
           location, description, actions_taken, reporter_name, reporter_contact,
-          department, incident_w3w, image_urls
-        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12::jsonb)
-        RETURNING id, created_at, incident_date::text AS incident_date, incident_time,
+          department, image_urls
+        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11::jsonb)
+        RETURNING id, created_at, event_id, incident_date::text AS incident_date, incident_time,
                   incident_type, severity, location, description, actions_taken,
-                  reporter_name, reporter_contact, department, incident_w3w, image_urls`,
+                  reporter_name, reporter_contact, department, image_urls`,
         [
+          effectiveEventId,
           data.incident_date,
           data.incident_time,
           data.incident_type,
@@ -102,7 +151,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           data.reporter_name,
           null,
           data.department,
-          data.incident_w3w ?? null,
           imageUrlsJson,
         ],
       );

@@ -1,4 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
+import { Link } from "react-router-dom";
+import { useAuth } from "../auth/useAuth";
 import {
   EXTINGUISHER_TYPES,
   FIRE_CLASSES_UK,
@@ -6,11 +8,23 @@ import {
   TRAINING_EXTINGUISHER_CHART,
   TRAINING_FIRE_TRIANGLE,
 } from "../data/trainingFireExtinguishers";
+import {
+  TRAINING_CROWD_CONTROL,
+  TRAINING_EVACUATION,
+  TRAINING_FIRE_ACTION_STEPS,
+  TRAINING_KEY_TERMS_FLASHPOINT,
+  TRAINING_LEARNING_OUTCOMES,
+  TRAINING_PREVENTION_KEK,
+} from "../data/trainingModuleJalsa";
 import { publicAsset } from "../lib/publicAsset";
+import mainModulePdfUrl from "../assets/pdfs/Fire & Safety Module UPDATED.pdf?url";
 
-const LAST_SCORE_KEY = "fire-safety-training-extinguishers-last-score-v1";
+const LAST_SCORE_KEY = "fire-safety-training-extinguishers-last-score-v2";
+const MODULE_DOWNLOAD_NAME = "Jalsa-Fire-Safety-Training-Module.pdf";
 
-export function TrainingPage() {
+export function TrainingModulePage() {
+  const { role } = useAuth();
+  const isAdmin = role === "admin";
   const [answers, setAnswers] = useState<Record<string, number>>({});
 
   const allAnswered = FIRE_EXTINGUISHER_QUIZ.every(
@@ -50,21 +64,54 @@ export function TrainingPage() {
       <header>
         <h1 className="text-2xl font-bold text-slate-900">Fire &amp; safety training</h1>
         <p className="mt-1 max-w-3xl text-slate-600">
-          Fire triangle, classes of fire, extinguisher types, reference chart, and a short quiz — all on
-          this page. POC content: confirm equipment and procedures with your H&amp;S lead on site.
+          Learning outcomes, procedures, extinguishers, and a check - aligned to the Jalsa training
+          module. Confirm equipment and on-site process with your H&amp;S lead. Use the{" "}
+          <span className="font-medium text-slate-800">Fire Safety Order 2005</span> tab above for
+          the legal brief and link to the full summary.
         </p>
       </header>
+
+      <section className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+        <h2 className="text-lg font-semibold text-slate-900">Learning outcomes</h2>
+        <ul className="mt-4 list-inside list-disc space-y-2 text-sm text-slate-700">
+          {TRAINING_LEARNING_OUTCOMES.map((o) => (
+            <li key={o}>{o}</li>
+          ))}
+        </ul>
+      </section>
+
+      {isAdmin ? (
+        <section className="rounded-xl border border-amber-200 bg-amber-50/50 p-5 shadow-sm">
+          <h2 className="text-lg font-semibold text-amber-950">2025 Red Book (internal)</h2>
+          <p className="mt-2 text-sm text-amber-950/90">
+            Retrospective and action points for leads - not part of the public volunteer quiz.
+          </p>
+          <p className="mt-4">
+            <Link
+              to="/training/red-book-2025"
+              className="text-base font-semibold text-amber-950 underline decoration-amber-300 underline-offset-2 hover:decoration-amber-950"
+            >
+              Open: 2025 Red Book points
+            </Link>
+          </p>
+        </section>
+      ) : null}
 
       <section className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
         <h2 className="text-lg font-semibold text-slate-900">Classes of fire (UK framing)</h2>
         <ul className="mt-4 space-y-3 text-sm text-slate-700">
           {FIRE_CLASSES_UK.map((c) => (
             <li key={c.code}>
-              <span className="font-semibold text-slate-900">{c.code}</span> — {c.title}:{" "}
+              <span className="font-semibold text-slate-900">{c.code}</span> - {c.title}:{" "}
               {c.examples}
             </li>
           ))}
         </ul>
+      </section>
+
+      <section className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+        <h2 className="text-lg font-semibold text-slate-900">Key term: flash point</h2>
+        <p className="mt-2 text-sm text-slate-700">{TRAINING_KEY_TERMS_FLASHPOINT}</p>
       </section>
 
       <section
@@ -84,10 +131,24 @@ export function TrainingPage() {
             loading="eager"
           />
           <figcaption className="mt-4 text-center text-sm text-slate-600">
-            <span className="font-medium text-slate-800">Figure — fire triangle.</span> Removing fuel,
+            <span className="font-medium text-slate-800">Figure - fire triangle.</span> Removing fuel,
             heat, or oxygen stops the fire.
           </figcaption>
         </figure>
+      </section>
+
+      <section className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+        <h2 className="text-lg font-semibold text-slate-900">Prevention and KeK</h2>
+        <p className="mt-2 text-sm text-slate-700">{TRAINING_PREVENTION_KEK}</p>
+      </section>
+
+      <section className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+        <h2 className="text-lg font-semibold text-slate-900">If there is a fire: fire action</h2>
+        <ol className="mt-4 list-decimal space-y-2 pl-5 text-sm text-slate-700">
+          {TRAINING_FIRE_ACTION_STEPS.map((s) => (
+            <li key={s}>{s}</li>
+          ))}
+        </ol>
       </section>
 
       <section className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
@@ -95,8 +156,8 @@ export function TrainingPage() {
           Extinguisher types
         </h2>
         <p className="mt-2 text-sm text-slate-700">
-          Always read the label and pictograms on the actual appliance. Match the{" "}
-          <strong>class of fire</strong> to the extinguisher type.
+          Always read the label and pictograms on the actual appliance. Match the class of fire to
+          the extinguisher type.
         </p>
         <figure
           id="extinguisher-chart"
@@ -112,8 +173,8 @@ export function TrainingPage() {
           <figcaption className="mt-3 text-center text-sm text-slate-600">
             <span className="font-medium text-slate-800">
               {TRAINING_EXTINGUISHER_CHART.title}
-            </span>{" "}
-            — use with the detail below; on site, follow signage and your H&amp;S brief.
+            </span>
+            . Use with the detail below; on site, follow signage and your H&amp;S brief.
           </figcaption>
         </figure>
         <div className="mt-6 grid gap-6 sm:grid-cols-2">
@@ -135,10 +196,66 @@ export function TrainingPage() {
         </div>
       </section>
 
+      <section className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+        <h2 className="text-lg font-semibold text-slate-900">Evacuation</h2>
+        <p className="mt-2 text-sm text-slate-700">{TRAINING_EVACUATION.intro}</p>
+        <div className="mt-4 space-y-4">
+          {TRAINING_EVACUATION.types.map((t) => (
+            <div key={t.title} className="rounded-lg border border-slate-100 bg-slate-50/50 p-4">
+              <h3 className="text-sm font-semibold text-slate-900">{t.title}</h3>
+              <p className="mt-2 text-sm text-slate-700">{t.body}</p>
+            </div>
+          ))}
+        </div>
+        <h3 className="mt-6 text-sm font-semibold text-slate-900">Protocol (headlines)</h3>
+        <ul className="mt-2 list-inside list-disc space-y-1 text-sm text-slate-700">
+          {TRAINING_EVACUATION.protocol.map((p) => (
+            <li key={p}>{p}</li>
+          ))}
+        </ul>
+        <div className="mt-6 grid gap-4 sm:grid-cols-2">
+          <div className="rounded-lg border border-slate-200 bg-white p-4">
+            <h3 className="text-sm font-semibold text-slate-900">Site Clear</h3>
+            <p className="mt-2 text-sm text-slate-700">
+              {TRAINING_EVACUATION.siteClearVsAllClear.siteClear}
+            </p>
+          </div>
+          <div className="rounded-lg border border-slate-200 bg-white p-4">
+            <h3 className="text-sm font-semibold text-slate-900">All Clear</h3>
+            <p className="mt-2 text-sm text-slate-700">
+              {TRAINING_EVACUATION.siteClearVsAllClear.allClear}
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <section className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+        <h2 className="text-lg font-semibold text-slate-900">Crowd control</h2>
+        <p className="mt-1 text-sm text-slate-600">The three C’s, then field notes from the module.</p>
+        <div className="mt-4 space-y-4">
+          {TRAINING_CROWD_CONTROL.threeCs.map((c) => (
+            <div key={c.label}>
+              <h3 className="text-sm font-semibold text-slate-900">{c.label}</h3>
+              <ul className="mt-2 list-inside list-disc text-sm text-slate-700">
+                {c.items.map((i) => (
+                  <li key={i}>{i}</li>
+                ))}
+              </ul>
+            </div>
+          ))}
+        </div>
+        <ul className="mt-4 list-inside list-disc space-y-2 text-sm text-slate-700">
+          {TRAINING_CROWD_CONTROL.points.map((p) => (
+            <li key={p}>{p}</li>
+          ))}
+        </ul>
+      </section>
+
       <section className="rounded-xl border-2 border-red-900/20 bg-red-50/40 p-5 shadow-sm">
         <h2 className="text-lg font-semibold text-red-950">Check your understanding</h2>
         <p className="mt-1 text-sm text-slate-700">
-          Five questions — tap an option to see whether it&apos;s correct and read the rationale.
+          {FIRE_EXTINGUISHER_QUIZ.length} questions - tap an option to see whether it&apos;s correct
+          and read the rationale.
         </p>
         <div className="mt-6 space-y-8">
           {FIRE_EXTINGUISHER_QUIZ.map((q, qi) => {
@@ -195,7 +312,7 @@ export function TrainingPage() {
                     <p className="font-semibold">
                       {selected === q.correctIndex
                         ? "Correct."
-                        : "Not quite — here is the reasoning."}
+                        : "Not quite - here is the reasoning."}
                     </p>
                     <p className="mt-2">
                       <span className="font-medium">Rationale:</span> {q.rationale}
@@ -229,6 +346,25 @@ export function TrainingPage() {
             ) : null}
           </div>
         </div>
+      </section>
+
+      <section
+        className="rounded-xl border border-slate-200 bg-slate-50/80 p-5 shadow-sm"
+        aria-labelledby="module-dl"
+      >
+        <h2 id="module-dl" className="text-lg font-semibold text-slate-900">
+          Download the full training module (PDF)
+        </h2>
+        <p className="mt-1 text-sm text-slate-600">Slide-style deck: same source as the content above.</p>
+        <a
+          href={mainModulePdfUrl}
+          download={MODULE_DOWNLOAD_NAME}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="mt-4 inline-flex min-h-11 items-center justify-center rounded-lg bg-red-800 px-5 py-3 text-base font-semibold text-white shadow-sm hover:bg-red-900"
+        >
+          Download Fire &amp; safety training module (PDF)
+        </a>
       </section>
     </div>
   );

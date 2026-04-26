@@ -8,7 +8,7 @@ export type VenueChecklistItem = {
   label: string;
 };
 
-/** Checklist lines — Kitchen, Car park, and Langar each have their own tasks (confirm wording with PM / H&S). */
+/** Checklist lines - Kitchen, Car park, and Langar each have their own tasks (confirm wording with PM / H&S). */
 export const VENUE_CHECKLIST_ITEMS: readonly VenueChecklistItem[] = [
   // Kitchen (prep / equipment / grease)
   {
@@ -56,7 +56,7 @@ export const VENUE_CHECKLIST_ITEMS: readonly VenueChecklistItem[] = [
     areaTitle: "Car park",
     label: "Pedestrian crossings and conflict points reasonably safe; obvious trip or crowding issues flagged.",
   },
-  // Langar (serving / marquee flow — distinct from back kitchen prep)
+  // Langar (serving / marquee flow - distinct from back kitchen prep)
   {
     id: "langar-exits",
     area: "langar",
@@ -86,7 +86,7 @@ export const VENUE_CHECKLIST_ITEMS: readonly VenueChecklistItem[] = [
 /** Section order in the form and in history summaries. */
 export const VENUE_AREA_ORDER: readonly VenueAreaId[] = ["kitchen", "car_park", "langar"];
 
-/** Venues available in “Select venue” — aligns with checklist areas. */
+/** Venues available in “Select venue” - aligns with checklist areas. */
 export const VENUE_OPTIONS: readonly { id: VenueAreaId; label: string }[] = [
   { id: "kitchen", label: "Kitchen" },
   { id: "car_park", label: "Car park" },
@@ -101,7 +101,7 @@ export function venueDisplayLabel(venueId: VenueAreaId): string {
   return VENUE_OPTIONS.find((v) => v.id === venueId)?.label ?? venueId;
 }
 
-/** One-line scope for each venue — shown under the checklist heading so the list is clearly venue-specific. */
+/** One-line scope for each venue - shown under the checklist heading so the list is clearly venue-specific. */
 export const VENUE_CHECKLIST_SCOPE: Record<VenueAreaId, string> = {
   kitchen:
     "Back-of-house: gas/LPG, grease and Class F, kitchen extinguishers, and extraction.",

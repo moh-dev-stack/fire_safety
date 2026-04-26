@@ -42,7 +42,7 @@ export function LoginPage() {
     <div className="flex min-h-screen flex-col justify-center bg-slate-100 px-4 py-10">
       <div className="mx-auto w-full max-w-md rounded-2xl border border-slate-200 bg-white p-8 shadow-sm">
         <h1 className="text-xl font-bold text-slate-900">
-          Fire &amp; Safety — Jalsa 2026
+          Fire &amp; Safety - Jalsa 2026
         </h1>
         <p className="mt-2 text-sm text-slate-600">
           Sign in with username <strong>admin</strong> or <strong>user</strong>{" "}

@@ -1,13 +1,10 @@
 import { describe, expect, it } from "vitest";
-import {
-  incidentCreateSchema,
-  isPlausibleIncidentW3w,
-  SITE_LOCATIONS,
-} from "./incident";
+import { incidentCreateSchema, SITE_LOCATIONS } from "./incident";
 
 describe("incidentCreateSchema", () => {
   it("accepts a complete valid payload", () => {
     const parsed = incidentCreateSchema.parse({
+      event_id: "jalsa-2026-islamabad",
       incident_date: "2026-07-24",
       incident_time: "14:00",
       incident_type: "Equipment",
@@ -26,6 +23,7 @@ describe("incidentCreateSchema", () => {
   it("rejects empty reporter name", () => {
     expect(() =>
       incidentCreateSchema.parse({
+        event_id: "jalsa-2026-islamabad",
         incident_date: "2026-07-24",
         incident_time: "09:00",
         incident_type: "Other",
@@ -42,6 +40,7 @@ describe("incidentCreateSchema", () => {
   it("rejects empty department", () => {
     expect(() =>
       incidentCreateSchema.parse({
+        event_id: "jalsa-2026-islamabad",
         incident_date: "2026-07-24",
         incident_time: "09:00",
         incident_type: "Other",
@@ -58,6 +57,7 @@ describe("incidentCreateSchema", () => {
   it("rejects legacy long incident_type labels (form must send codes)", () => {
     expect(() =>
       incidentCreateSchema.parse({
+        event_id: "jalsa-2026-islamabad",
         incident_date: "2026-07-24",
         incident_time: "09:00",
         incident_type: "Other (fire & safety)",
@@ -74,6 +74,7 @@ describe("incidentCreateSchema", () => {
   it("rejects empty location", () => {
     expect(() =>
       incidentCreateSchema.parse({
+        event_id: "jalsa-2026-islamabad",
         incident_date: "2026-07-24",
         incident_time: "14:00",
         incident_type: "Other",
@@ -90,6 +91,7 @@ describe("incidentCreateSchema", () => {
   it("rejects time not in slot list", () => {
     expect(() =>
       incidentCreateSchema.parse({
+        event_id: "jalsa-2026-islamabad",
         incident_date: "2026-07-24",
         incident_time: "14:15",
         incident_type: "Other",
@@ -105,6 +107,7 @@ describe("incidentCreateSchema", () => {
 
   it("defaults image_urls to empty array when omitted", () => {
     const parsed = incidentCreateSchema.parse({
+      event_id: "jalsa-2026-islamabad",
       incident_date: "2026-07-24",
       incident_time: "09:00",
       incident_type: "Other",
@@ -118,30 +121,9 @@ describe("incidentCreateSchema", () => {
     expect(parsed.image_urls).toEqual([]);
   });
 
-  it("isPlausibleIncidentW3w accepts normalised three-word shape", () => {
-    expect(isPlausibleIncidentW3w("///Index.Home.Raft")).toBe(true);
-    expect(isPlausibleIncidentW3w("ab")).toBe(false);
-    expect(isPlausibleIncidentW3w("1.2.3")).toBe(false);
-  });
-
-  it("normalises optional incident_w3w and omits when empty", () => {
-    const parsed = incidentCreateSchema.parse({
-      incident_date: "2026-07-24",
-      incident_time: "09:00",
-      incident_type: "Other",
-      severity: "Medium",
-      location: SITE_LOCATIONS[0],
-      description: "Test",
-      actions_taken: "None",
-      reporter_name: "X",
-      department: "Ops",
-      incident_w3w: "///Filled.Count.Soak",
-    });
-    expect(parsed.incident_w3w).toBe("filled.count.soak");
-  });
-
   it("accepts allowed Vercel Blob HTTPS URLs", () => {
     const parsed = incidentCreateSchema.parse({
+      event_id: "jalsa-2026-islamabad",
       incident_date: "2026-07-24",
       incident_time: "09:00",
       incident_type: "Other",
@@ -162,6 +144,7 @@ describe("incidentCreateSchema", () => {
   it("rejects non-Blob host in image_urls", () => {
     expect(() =>
       incidentCreateSchema.parse({
+        event_id: "jalsa-2026-islamabad",
         incident_date: "2026-07-24",
         incident_time: "09:00",
         incident_type: "Other",
@@ -182,6 +165,7 @@ describe("incidentCreateSchema", () => {
     );
     expect(() =>
       incidentCreateSchema.parse({
+        event_id: "jalsa-2026-islamabad",
         incident_date: "2026-07-24",
         incident_time: "09:00",
         incident_type: "Other",
@@ -194,5 +178,38 @@ describe("incidentCreateSchema", () => {
         image_urls: urls,
       }),
     ).toThrow();
+  });
+
+  it("rejects on-site date that does not belong to the event_id", () => {
+    expect(() =>
+      incidentCreateSchema.parse({
+        event_id: "jalsa-2025-islamabad",
+        incident_date: "2026-07-24",
+        incident_time: "09:00",
+        incident_type: "Other",
+        severity: "Medium",
+        location: SITE_LOCATIONS[0],
+        description: "Test",
+        actions_taken: "None",
+        reporter_name: "X",
+        department: "Ops",
+      }),
+    ).toThrow();
+  });
+
+  it("accepts Jalsa 2025 id with a 2025 on-site date", () => {
+    const parsed = incidentCreateSchema.parse({
+      event_id: "jalsa-2025-islamabad",
+      incident_date: "2025-07-25",
+      incident_time: "09:00",
+      incident_type: "Other",
+      severity: "Medium",
+      location: SITE_LOCATIONS[0],
+      description: "Test",
+      actions_taken: "None",
+      reporter_name: "X",
+      department: "Ops",
+    });
+    expect(parsed.event_id).toBe("jalsa-2025-islamabad");
   });
 });

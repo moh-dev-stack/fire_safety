@@ -1,4 +1,4 @@
-/** Static Help page copy — replace placeholders with real site numbers before Jalsa. */
+/** Static Help page copy - replace placeholders with real site numbers before Jalsa. */
 
 export const helpIntro = {
   title: "Help",

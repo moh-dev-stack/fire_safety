@@ -5,7 +5,7 @@ import {
   type SessionRole,
 } from "./lib/session.js";
 
-/** Fixed POC gate — not overridable via env; only this value is accepted. */
+/** Fixed POC gate - not overridable via env; only this value is accepted. */
 const LOGIN_PASSWORD = "1234";
 
 function roleFromUsername(raw: string): SessionRole | null {

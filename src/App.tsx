@@ -1,5 +1,6 @@
 import { Navigate, Route, Routes } from "react-router-dom";
 import { AuthProvider } from "./auth/AuthProvider";
+import { ActiveEventProvider } from "./context/ActiveEventContext";
 import { AdminOnlyPage } from "./components/AdminOnlyPage";
 import { AppLayout } from "./components/AppLayout";
 import { ProtectedRoute } from "./components/ProtectedRoute";
@@ -13,15 +14,21 @@ import {
   ENABLE_TRAINING_MODULE,
   ENABLE_VENUE_CHECKLIST,
 } from "./config/features";
+import { HomePage } from "./pages/HomePage";
 import { RotaPage } from "./pages/RotaPage";
 import { TeamPage } from "./pages/TeamPage";
-import { TrainingPage } from "./pages/TrainingPage";
+import { TrainingFsoBriefPage } from "./pages/TrainingFsoBriefPage";
+import { TrainingFsoJalsaPage } from "./pages/TrainingFsoJalsaPage";
+import { TrainingLayout } from "./pages/TrainingLayout";
+import { TrainingModulePage } from "./pages/TrainingModulePage";
+import { TrainingRedBookPage } from "./pages/TrainingRedBookPage";
 import { VenueChecklistPage } from "./pages/VenueChecklistPage";
 
 export default function App() {
   return (
     <AuthProvider>
-      <Routes>
+      <ActiveEventProvider>
+        <Routes>
         <Route path="/login" element={<LoginPage />} />
         <Route
           element={
@@ -30,8 +37,9 @@ export default function App() {
             </ProtectedRoute>
           }
         >
+          <Route index element={<HomePage />} />
           <Route
-            index
+            path="team"
             element={
               <AdminOnlyPage>
                 <TeamPage />
@@ -47,13 +55,23 @@ export default function App() {
             }
           />
           {ENABLE_TRAINING_MODULE ? (
-            <>
-              <Route path="training" element={<TrainingPage />} />
+            <Route path="training" element={<TrainingLayout />}>
+              <Route index element={<TrainingModulePage />} />
+              <Route path="fso-2005-brief" element={<TrainingFsoBriefPage />} />
+              <Route path="fso-2005-jalsa-uk" element={<TrainingFsoJalsaPage />} />
               <Route
-                path="training/fire-extinguishers"
+                path="red-book-2025"
+                element={
+                  <AdminOnlyPage>
+                    <TrainingRedBookPage />
+                  </AdminOnlyPage>
+                }
+              />
+              <Route
+                path="fire-extinguishers"
                 element={<Navigate to="/training" replace />}
               />
-            </>
+            </Route>
           ) : null}
           {ENABLE_VENUE_CHECKLIST ? (
             <Route
@@ -93,7 +111,8 @@ export default function App() {
           />
         </Route>
         <Route path="*" element={<Navigate to="/" replace />} />
-      </Routes>
+        </Routes>
+      </ActiveEventProvider>
     </AuthProvider>
   );
 }
