@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { CATALOG_EVENT_IDS, getAllCatalogIncidentDates, getEventById } from "../data/events";
+import { CATALOG_EVENT_IDS, getAllCatalogIncidentDates, getEventById } from "../data/events.js";
 
 /**
  * Stored / API values for incident category (must match server Zod + DB).

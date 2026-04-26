@@ -84,10 +84,12 @@ export function getActiveEventId(): string {
     typeof process !== "undefined" && process.env
       ? process.env.EVENT_ID || process.env.VITE_EVENT_ID
       : undefined;
-  const fromVite =
-    typeof import.meta !== "undefined" && import.meta.env?.VITE_EVENT_ID
-      ? (import.meta.env.VITE_EVENT_ID as string)
-      : undefined;
+  const fromVite = (() => {
+    if (typeof import.meta === "undefined") return undefined;
+    const m = import.meta as unknown as { env?: { VITE_EVENT_ID?: string } };
+    const id = m.env?.VITE_EVENT_ID;
+    return typeof id === "string" ? id : undefined;
+  })();
   const raw = (fromProcess || fromVite || "").trim();
   if (raw) return raw;
   return DEFAULT_EVENT_ID;
