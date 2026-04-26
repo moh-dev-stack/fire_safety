@@ -135,8 +135,27 @@ To add a field: update Zod schema, `sql/schema.sql` (migration), `mapRow` in `ap
 
 Cookies use **`Secure`** in production (`VERCEL=1` or `NODE_ENV=production`).
 
+## Mimic Vercel’s production build (local)
+
+`npm run build` only runs **`tsc -b`** (app tsconfigs) **+ `vite build`**. On Vercel, **`vercel build`** also type-checks and bundles each **`api/**/*.ts`** serverless function with stricter settings (this is where import paths like `../data/events.js` vs `../data/events` can fail even when `npm run build` passes).
+
+Run the same pipeline locally:
+
+```bash
+npm run build:vercel
+```
+
+This runs **`npx vercel@50 build --yes --prod`**, which matches the deployment build (framework build + API compilation). **First time:** link the repo folder to your Vercel project so env and settings resolve:
+
+```bash
+npx vercel@50 link
+```
+
+If you are not logged in: `npx vercel@50 login`. **CI:** set **`VERCEL_TOKEN`** (Vercel → Account → Tokens) and ensure the project is linked or pass org/project IDs as in [Vercel’s docs](https://vercel.com/docs/cli/build).
+
 ## Troubleshooting
 
+- **`npm run build:vercel` fails with token / auth** — Run `npx vercel@50 login`, then `npx vercel@50 link`, or set **`VERCEL_TOKEN`** for non-interactive runs.
 - **401 on API after login** — Check `SESSION_SECRET` length; ensure requests use `credentials: 'include'` (already set in `src/lib/api.ts`).
 - **500 on incidents** — `DATABASE_URL` wrong or `incidents` table missing; run `sql/schema.sql`.
 - **Empty incidents on Preview** — Preview may use a different database; production data is unchanged.

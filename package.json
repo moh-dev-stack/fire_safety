@@ -10,6 +10,7 @@
     "dev:all": "npm run dev",
     "dev:vercel": "npx --yes vercel@50 dev",
     "build": "tsc -b && vite build",
+    "build:vercel": "npx --yes vercel@50 build --yes --prod",
     "lint": "eslint .",
     "test": "vitest run",
     "smoke": "node scripts/smoke.mjs",
