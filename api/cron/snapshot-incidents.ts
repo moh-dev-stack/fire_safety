@@ -31,7 +31,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   try {
     const sql = getSql();
     const rows = await sql`
-      SELECT id, created_at, event_id, incident_date::text AS incident_date, incident_time,
+      SELECT id, created_at, incident_date::text AS incident_date, incident_time,
              incident_type, severity, location, description, actions_taken,
              reporter_name, reporter_contact, department, image_urls
       FROM incidents

@@ -2,7 +2,6 @@ import { cleanup, render, screen } from "@testing-library/react";
 import { MemoryRouter, Route, Routes } from "react-router-dom";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { AuthContext, type AuthContextValue } from "../auth/auth-context";
-import { ActiveEventProvider } from "../context/ActiveEventContext";
 import { AppLayout } from "./AppLayout";
 
 function wrap(
@@ -11,15 +10,13 @@ function wrap(
 ) {
   return (
     <AuthContext.Provider value={auth}>
-      <ActiveEventProvider>
-        <MemoryRouter initialEntries={[initialEntry]}>
-          <Routes>
-            <Route element={<AppLayout />}>
-              <Route path="/incidents" element={<div />} />
-            </Route>
-          </Routes>
-        </MemoryRouter>
-      </ActiveEventProvider>
+      <MemoryRouter initialEntries={[initialEntry]}>
+        <Routes>
+          <Route element={<AppLayout />}>
+            <Route path="/incidents" element={<div />} />
+          </Route>
+        </Routes>
+      </MemoryRouter>
     </AuthContext.Provider>
   );
 }
@@ -57,23 +54,5 @@ describe("AppLayout", () => {
     expect(screen.getAllByRole("link", { name: /^Team$/i }).length).toBeGreaterThan(0);
     expect(screen.getAllByRole("link", { name: /^Log$/i }).length).toBeGreaterThan(0);
     expect(screen.getAllByRole("link", { name: /^Red Book$/i }).length).toBeGreaterThan(0);
-  });
-
-  it("shows event selector for admin", () => {
-    render(wrap(baseAuth));
-    expect(screen.getByRole("combobox", { name: /event to view/i })).toBeInTheDocument();
-  });
-
-  it("hides event selector for user", () => {
-    render(
-      wrap(
-        {
-          ...baseAuth,
-          role: "user",
-        },
-        "/",
-      ),
-    );
-    expect(screen.queryByRole("combobox", { name: /event to view/i })).not.toBeInTheDocument();
   });
 });

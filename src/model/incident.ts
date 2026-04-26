@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { CATALOG_EVENT_IDS, getAllCatalogIncidentDates, getEventById } from "../data/events.js";
+import { USER_FIXED_EVENT_ID, getEventById } from "../data/events.js";
 
 /**
  * Stored / API values for incident category (must match server Zod + DB).
@@ -44,16 +44,15 @@ export const SEVERITY_LEVELS = ["Low", "Medium", "High"] as const;
 export const incidentTypeSchema = z.enum(INCIDENT_TYPE_CODES);
 export const severitySchema = z.enum(SEVERITY_LEVELS);
 
-/**
- * Valid incident_date values: union of all days defined on any event in the catalogue
- * (so 2025/2026 Jalsa and test events all validate on the server).
- */
-const ALL_CATALOG_DATES = getAllCatalogIncidentDates();
+const JALSA_2026_DATES_SORTED = [...getEventById(USER_FIXED_EVENT_ID)!.dates].sort() as [
+  string,
+  ...string[],
+];
 
-export const jalsaDaySchema = z.enum(ALL_CATALOG_DATES);
+export const jalsaDaySchema = z.enum(JALSA_2026_DATES_SORTED);
 
 export function jalsaDaySelectLabel(iso: string): string {
-  if (!ALL_CATALOG_DATES.includes(iso)) {
+  if (!(JALSA_2026_DATES_SORTED as readonly string[]).includes(iso)) {
     return iso;
   }
   return new Date(iso + "T12:00:00").toLocaleDateString("en-GB", {
@@ -161,28 +160,14 @@ const incidentFieldsBase = {
 
 export const incidentFieldsSchema = z.object(incidentFieldsBase);
 
-const eventIdSchema = z.enum(CATALOG_EVENT_IDS);
-
 /** Payload for creating an incident (optional photos as Blob HTTPS URLs). */
-export const incidentCreateSchema = incidentFieldsSchema
-  .extend({
-    event_id: eventIdSchema,
-    image_urls: z
-      .array(imageUrlSchema)
-      .max(INCIDENT_IMAGE_URL_MAX)
-      .optional()
-      .default([]),
-  })
-  .superRefine((data, ctx) => {
-    const ev = getEventById(data.event_id);
-    if (!ev || !(ev.dates as readonly string[]).includes(data.incident_date)) {
-      ctx.addIssue({
-        code: "custom",
-        message: "Pick an on-site date that belongs to the selected event",
-        path: ["incident_date"],
-      });
-    }
-  });
+export const incidentCreateSchema = incidentFieldsSchema.extend({
+  image_urls: z
+    .array(imageUrlSchema)
+    .max(INCIDENT_IMAGE_URL_MAX)
+    .optional()
+    .default([]),
+});
 
 export type IncidentCreate = z.infer<typeof incidentCreateSchema>;
 
@@ -283,7 +268,6 @@ export function parseStoredIncidentDraft(data: unknown): IncidentDraft | null {
 export type IncidentRow = {
   id: number;
   created_at: string;
-  event_id: string;
   incident_date: string | null;
   incident_time: string | null;
   incident_type: IncidentTypeCode;
@@ -300,7 +284,6 @@ export type IncidentRow = {
 export const INCIDENT_CSV_COLUMNS = [
   "id",
   "created_at",
-  "event_id",
   "incident_date",
   "incident_time",
   "incident_type",

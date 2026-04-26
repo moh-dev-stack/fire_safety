@@ -1,6 +1,5 @@
 import { Navigate, Route, Routes } from "react-router-dom";
 import { AuthProvider } from "./auth/AuthProvider";
-import { ActiveEventProvider } from "./context/ActiveEventContext";
 import { AdminOnlyPage } from "./components/AdminOnlyPage";
 import { AppLayout } from "./components/AppLayout";
 import { ProtectedRoute } from "./components/ProtectedRoute";
@@ -27,7 +26,6 @@ import { VenueChecklistPage } from "./pages/VenueChecklistPage";
 export default function App() {
   return (
     <AuthProvider>
-      <ActiveEventProvider>
         <Routes>
         <Route path="/login" element={<LoginPage />} />
         <Route
@@ -112,7 +110,6 @@ export default function App() {
         </Route>
         <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
-      </ActiveEventProvider>
     </AuthProvider>
   );
 }

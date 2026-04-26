@@ -5,8 +5,7 @@ import {
   ENABLE_TRAINING_MODULE,
   ENABLE_VENUE_CHECKLIST,
 } from "../config/features";
-import { useActiveEvent } from "../context/ActiveEventContext";
-import { formatEventHeaderSubtitle, formatEventOnSiteDays } from "../data/events";
+import { formatEventHeaderSubtitle, getActiveEvent } from "../data/events";
 
 const navHome = { to: "/", label: "Home" } as const;
 const navBaseBeforeReport = [
@@ -41,9 +40,8 @@ const linkClass = ({ isActive }: { isActive: boolean }) =>
 
 export function AppLayout() {
   const { logout, role } = useAuth();
-  const { event: activeEvent, eventId, canSelectEvent, setEventId, adminEventOptions } =
-    useActiveEvent();
   const [open, setOpen] = useState(false);
+  const activeEvent = getActiveEvent();
 
   const nav = useMemo(() => {
     if (role === "user") {
@@ -65,25 +63,6 @@ export function AppLayout() {
       <header className="sticky top-0 z-50 border-b border-slate-200 bg-white/95 backdrop-blur">
         <div className="mx-auto flex max-w-3xl items-center justify-between gap-3 px-4 py-3">
           <div className="flex min-w-0 flex-1 items-center gap-2 sm:gap-3">
-            {canSelectEvent ? (
-              <div className="shrink-0">
-                <label htmlFor="app-event-select" className="sr-only">
-                  Event to view
-                </label>
-                <select
-                  id="app-event-select"
-                  value={eventId}
-                  onChange={(e) => setEventId(e.target.value)}
-                  className="max-w-[11rem] min-h-11 rounded-lg border border-slate-300 bg-white px-2 py-2 text-left text-sm font-medium text-slate-900 shadow-sm sm:max-w-[14rem] sm:px-3"
-                >
-                  {adminEventOptions.map((e) => (
-                    <option key={e.id} value={e.id}>
-                      {e.shortLabel}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            ) : null}
             <Link to={homeLink} className="min-w-0 flex-1 text-left">
               <span className="block truncate text-sm font-semibold text-slate-900">
                 {activeEvent.shortLabel}
@@ -110,20 +89,6 @@ export function AppLayout() {
             Log out
           </button>
         </div>
-        {canSelectEvent ? (
-          <div className="border-t border-slate-100 bg-slate-50/90">
-            <div className="mx-auto max-w-3xl px-4 py-2.5 text-xs leading-relaxed text-slate-600 sm:text-sm">
-              <p className="font-medium text-slate-800">{activeEvent.name}</p>
-              <p className="mt-0.5">
-                <span className="text-slate-500">Venue:</span> {activeEvent.venue}
-              </p>
-              <p className="mt-0.5">
-                <span className="text-slate-500">On-site days:</span>{" "}
-                {formatEventOnSiteDays(activeEvent)}
-              </p>
-            </div>
-          </div>
-        ) : null}
         <nav
           className={`border-t border-slate-100 bg-slate-100/80 sm:block ${open ? "block" : "hidden"}`}
         >

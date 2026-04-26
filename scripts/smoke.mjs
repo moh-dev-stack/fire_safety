@@ -151,12 +151,9 @@ async function main() {
     pass("GET /api/incidents/export as user → 403");
   }
 
-  const adminList = await fetch(
-    `${API}/api/incidents?event_id=jalsa-2026-islamabad`,
-    {
-      headers: { Cookie: adminLogin.cookie },
-    },
-  );
+  const adminList = await fetch(`${API}/api/incidents`, {
+    headers: { Cookie: adminLogin.cookie },
+  });
   if (adminList.status === 200) {
     pass("GET /api/incidents as admin → 200");
   } else if (adminList.status === 500) {
@@ -168,12 +165,9 @@ async function main() {
     fail(`GET /api/incidents as admin: unexpected ${adminList.status}`);
   }
 
-  const adminExport = await fetch(
-    `${API}/api/incidents/export?event_id=jalsa-2026-islamabad`,
-    {
-      headers: { Cookie: adminLogin.cookie },
-    },
-  );
+  const adminExport = await fetch(`${API}/api/incidents/export`, {
+    headers: { Cookie: adminLogin.cookie },
+  });
   if (adminExport.status === 200) {
     pass("GET /api/incidents/export as admin → 200");
   } else if (adminExport.status === 500) {

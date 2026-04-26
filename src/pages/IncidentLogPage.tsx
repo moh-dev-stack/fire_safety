@@ -10,7 +10,7 @@ import {
   type IncidentTypeCode,
 } from "../model/incident";
 import * as api from "../lib/api";
-import { useActiveEvent } from "../context/ActiveEventContext";
+import { getActiveEvent } from "../data/events";
 
 function rowMatchesSearch(row: IncidentRow, q: string): boolean {
   if (!q) return true;
@@ -28,7 +28,6 @@ function rowMatchesSearch(row: IncidentRow, q: string): boolean {
     row.department ?? "",
     row.incident_date ?? "",
     row.incident_time ?? "",
-    row.event_id,
     row.image_urls.join(" "),
   ]
     .join(" ")
@@ -161,7 +160,7 @@ function IncidentPhotoThumb({
 }
 
 export function IncidentLogPage() {
-  const { event, eventId } = useActiveEvent();
+  const event = getActiveEvent();
   const jalsaDays = event.dates;
 
   const [rows, setRows] = useState<IncidentRow[]>([]);
@@ -182,14 +181,14 @@ export function IncidentLogPage() {
     setLoading(true);
     setError(null);
     try {
-      const data = (await api.fetchIncidents(eventId)) as IncidentRow[];
+      const data = (await api.fetchIncidents()) as IncidentRow[];
       setRows(data);
     } catch {
       setError("Could not load incident reports.");
     } finally {
       setLoading(false);
     }
-  }, [eventId]);
+  }, []);
 
   useEffect(() => {
     void load();
@@ -204,7 +203,7 @@ export function IncidentLogPage() {
     setDownloading(true);
     setError(null);
     try {
-      await api.downloadIncidentsCsv(eventId);
+      await api.downloadIncidentsCsv();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Download failed");
     } finally {
@@ -250,8 +249,7 @@ export function IncidentLogPage() {
           <h1 className="text-2xl font-bold text-slate-900">Incident log</h1>
           <p className="mt-1 text-sm font-medium text-slate-800">{event.name}</p>
           <p className="mt-1 text-slate-600">
-            Fire &amp; safety reports stored for this event (same as the header selector). CSV export
-            matches the list below.
+            All submitted fire &amp; safety reports. CSV export includes the same columns as below.
           </p>
         </div>
         <div className="flex flex-col gap-2 sm:flex-row sm:shrink-0">

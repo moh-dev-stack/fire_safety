@@ -4,7 +4,6 @@ import { incidentCreateSchema, SITE_LOCATIONS } from "./incident";
 describe("incidentCreateSchema", () => {
   it("accepts a complete valid payload", () => {
     const parsed = incidentCreateSchema.parse({
-      event_id: "jalsa-2026-islamabad",
       incident_date: "2026-07-24",
       incident_time: "14:00",
       incident_type: "Equipment",
@@ -23,7 +22,6 @@ describe("incidentCreateSchema", () => {
   it("rejects empty reporter name", () => {
     expect(() =>
       incidentCreateSchema.parse({
-        event_id: "jalsa-2026-islamabad",
         incident_date: "2026-07-24",
         incident_time: "09:00",
         incident_type: "Other",
@@ -40,7 +38,6 @@ describe("incidentCreateSchema", () => {
   it("rejects empty department", () => {
     expect(() =>
       incidentCreateSchema.parse({
-        event_id: "jalsa-2026-islamabad",
         incident_date: "2026-07-24",
         incident_time: "09:00",
         incident_type: "Other",
@@ -57,7 +54,6 @@ describe("incidentCreateSchema", () => {
   it("rejects legacy long incident_type labels (form must send codes)", () => {
     expect(() =>
       incidentCreateSchema.parse({
-        event_id: "jalsa-2026-islamabad",
         incident_date: "2026-07-24",
         incident_time: "09:00",
         incident_type: "Other (fire & safety)",
@@ -74,7 +70,6 @@ describe("incidentCreateSchema", () => {
   it("rejects empty location", () => {
     expect(() =>
       incidentCreateSchema.parse({
-        event_id: "jalsa-2026-islamabad",
         incident_date: "2026-07-24",
         incident_time: "14:00",
         incident_type: "Other",
@@ -91,7 +86,6 @@ describe("incidentCreateSchema", () => {
   it("rejects time not in slot list", () => {
     expect(() =>
       incidentCreateSchema.parse({
-        event_id: "jalsa-2026-islamabad",
         incident_date: "2026-07-24",
         incident_time: "14:15",
         incident_type: "Other",
@@ -107,7 +101,6 @@ describe("incidentCreateSchema", () => {
 
   it("defaults image_urls to empty array when omitted", () => {
     const parsed = incidentCreateSchema.parse({
-      event_id: "jalsa-2026-islamabad",
       incident_date: "2026-07-24",
       incident_time: "09:00",
       incident_type: "Other",
@@ -123,7 +116,6 @@ describe("incidentCreateSchema", () => {
 
   it("accepts allowed Vercel Blob HTTPS URLs", () => {
     const parsed = incidentCreateSchema.parse({
-      event_id: "jalsa-2026-islamabad",
       incident_date: "2026-07-24",
       incident_time: "09:00",
       incident_type: "Other",
@@ -144,7 +136,6 @@ describe("incidentCreateSchema", () => {
   it("rejects non-Blob host in image_urls", () => {
     expect(() =>
       incidentCreateSchema.parse({
-        event_id: "jalsa-2026-islamabad",
         incident_date: "2026-07-24",
         incident_time: "09:00",
         incident_type: "Other",
@@ -165,7 +156,6 @@ describe("incidentCreateSchema", () => {
     );
     expect(() =>
       incidentCreateSchema.parse({
-        event_id: "jalsa-2026-islamabad",
         incident_date: "2026-07-24",
         incident_time: "09:00",
         incident_type: "Other",
@@ -180,11 +170,10 @@ describe("incidentCreateSchema", () => {
     ).toThrow();
   });
 
-  it("rejects on-site date that does not belong to the event_id", () => {
+  it("rejects on-site date outside current Jalsa weekend (2026)", () => {
     expect(() =>
       incidentCreateSchema.parse({
-        event_id: "jalsa-2025-islamabad",
-        incident_date: "2026-07-24",
+        incident_date: "2025-07-25",
         incident_time: "09:00",
         incident_type: "Other",
         severity: "Medium",
@@ -195,21 +184,5 @@ describe("incidentCreateSchema", () => {
         department: "Ops",
       }),
     ).toThrow();
-  });
-
-  it("accepts Jalsa 2025 id with a 2025 on-site date", () => {
-    const parsed = incidentCreateSchema.parse({
-      event_id: "jalsa-2025-islamabad",
-      incident_date: "2025-07-25",
-      incident_time: "09:00",
-      incident_type: "Other",
-      severity: "Medium",
-      location: SITE_LOCATIONS[0],
-      description: "Test",
-      actions_taken: "None",
-      reporter_name: "X",
-      department: "Ops",
-    });
-    expect(parsed.event_id).toBe("jalsa-2025-islamabad");
   });
 });

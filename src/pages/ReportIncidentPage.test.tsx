@@ -5,7 +5,6 @@ import userEvent from "@testing-library/user-event";
 import { MemoryRouter } from "react-router-dom";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { AuthContext, type AuthContextValue } from "../auth/auth-context";
-import { ActiveEventProvider } from "../context/ActiveEventContext";
 import { SITE_LOCATIONS } from "../model/incident";
 import { ReportIncidentPage } from "./ReportIncidentPage";
 
@@ -27,11 +26,9 @@ vi.mock("@vercel/blob/client", () => ({
 function renderReport() {
   return render(
     <AuthContext.Provider value={reportPageAuth}>
-      <ActiveEventProvider>
-        <MemoryRouter>
-          <ReportIncidentPage />
-        </MemoryRouter>
-      </ActiveEventProvider>
+      <MemoryRouter>
+        <ReportIncidentPage />
+      </MemoryRouter>
     </AuthContext.Provider>,
   );
 }
@@ -62,7 +59,6 @@ describe("ReportIncidentPage", () => {
           const body = JSON.parse(init.body as string);
           expect(body).toEqual(
             expect.objectContaining({
-              event_id: "jalsa-2026-islamabad",
               incident_date: "2026-07-24",
               incident_time: "10:30",
               incident_type: "Other",

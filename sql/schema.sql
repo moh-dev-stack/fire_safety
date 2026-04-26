@@ -29,16 +29,9 @@ CREATE TABLE IF NOT EXISTS incident_report_drafts (
 
 ALTER TABLE incidents ADD COLUMN IF NOT EXISTS department TEXT NOT NULL DEFAULT '';
 
--- Which Jalsa (or other catalog event) the report belongs to (admin log filters on this).
-ALTER TABLE incidents ADD COLUMN IF NOT EXISTS event_id TEXT;
-UPDATE incidents SET event_id = 'jalsa-2025-islamabad'
-  WHERE (event_id IS NULL OR btrim(event_id) = '')
-  AND incident_date >= DATE '2025-07-25' AND incident_date <= DATE '2025-07-27';
-UPDATE incidents SET event_id = 'jalsa-2026-islamabad'
-  WHERE event_id IS NULL OR btrim(event_id) = '';
-ALTER TABLE incidents ALTER COLUMN event_id SET DEFAULT 'jalsa-2026-islamabad';
-ALTER TABLE incidents ALTER COLUMN event_id SET NOT NULL;
-CREATE INDEX IF NOT EXISTS incidents_event_id_idx ON incidents (event_id);
-
 -- Legacy optional geotag field (removed from the app).
 ALTER TABLE incidents DROP COLUMN IF EXISTS incident_w3w;
+
+-- Event scoping was removed; drop column if a previous migration added it.
+ALTER TABLE incidents DROP COLUMN IF EXISTS event_id;
+DROP INDEX IF EXISTS incidents_event_id_idx;

@@ -1,12 +1,12 @@
 import { Link } from "react-router-dom";
 import { useAuth } from "../auth/useAuth";
-import { useActiveEvent } from "../context/ActiveEventContext";
+import { getActiveEvent } from "../data/events";
 import { getAdminHomeTabs, getUserHomeTabs } from "../data/homeIntro";
 
 export function HomePage() {
   const { role } = useAuth();
   const isAdmin = role === "admin";
-  const { event } = useActiveEvent();
+  const event = getActiveEvent();
   const tabs = isAdmin ? getAdminHomeTabs() : getUserHomeTabs();
 
   return (

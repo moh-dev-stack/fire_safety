@@ -42,17 +42,6 @@ function normalizeSeverity(v: unknown): IncidentRow["severity"] {
   return "Medium";
 }
 
-function inferLegacyEventId(incidentDate: unknown, eventId: unknown): string {
-  if (eventId != null && String(eventId).trim().length > 0) {
-    return String(eventId).trim();
-  }
-  const d = incidentDate ? String(incidentDate).slice(0, 10) : "";
-  if (d >= "2025-07-25" && d <= "2025-07-27") {
-    return "jalsa-2025-islamabad";
-  }
-  return "jalsa-2026-islamabad";
-}
-
 /** Normalise Neon row object to IncidentRow */
 export function mapRow(r: Record<string, unknown>): IncidentRow {
   return {
@@ -61,7 +50,6 @@ export function mapRow(r: Record<string, unknown>): IncidentRow {
       r.created_at instanceof Date
         ? r.created_at.toISOString()
         : String(r.created_at),
-    event_id: inferLegacyEventId(r.incident_date, r.event_id),
     incident_date: r.incident_date ? String(r.incident_date).slice(0, 10) : null,
     incident_time: r.incident_time != null ? String(r.incident_time) : null,
     incident_type: normalizeIncidentType(r.incident_type),

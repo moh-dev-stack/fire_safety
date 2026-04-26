@@ -28,10 +28,10 @@ import {
   saveLocalIncidentDraft,
 } from "../lib/incident-draft-local";
 import { formatFlattenedZodError } from "../lib/format-validation";
-import { useActiveEvent } from "../context/ActiveEventContext";
+import { getActiveEvent } from "../data/events";
 
 export function ReportIncidentPage() {
-  const { event, eventId } = useActiveEvent();
+  const event = getActiveEvent();
 
   const [form, setForm] = useState<IncidentDraft>(() => emptyIncidentDraft());
   /** Selected files not yet uploaded (not stored in draft). */
@@ -89,7 +89,7 @@ export function ReportIncidentPage() {
         ? { ...f, incident_date: "" }
         : f,
     );
-  }, [event.id, event.dates]);
+  }, [event.dates]);
 
   useEffect(() => {
     if (!draftNotice) return;
@@ -133,7 +133,6 @@ export function ReportIncidentPage() {
       }
 
       const payload = incidentCreateSchema.parse({
-        event_id: eventId,
         incident_date: form.incident_date,
         incident_time: form.incident_time,
         incident_type: form.incident_type,

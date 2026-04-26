@@ -1,9 +1,10 @@
 import { describe, expect, it } from "vitest";
 import {
   EVENT_CATALOG,
+  USER_FIXED_EVENT_ID,
   formatEventHeaderSubtitle,
-  getEventById,
   getActiveEventId,
+  getEventById,
 } from "./events";
 
 describe("events catalogue", () => {
@@ -22,9 +23,8 @@ describe("events catalogue", () => {
     ]);
   });
 
-  it("active id always resolves to a catalogue entry", () => {
-    const id = getActiveEventId();
-    expect(getEventById(id) ?? getEventById("jalsa-2026-islamabad")).toBeDefined();
+  it("active id is fixed Jalsa 2026 for the app", () => {
+    expect(getActiveEventId()).toBe(USER_FIXED_EVENT_ID);
   });
 
   it("formats header subtitle for multi-day event", () => {

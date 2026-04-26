@@ -3,7 +3,6 @@ import userEvent from "@testing-library/user-event";
 import { MemoryRouter } from "react-router-dom";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { AuthContext, type AuthContextValue } from "../auth/auth-context";
-import { ActiveEventProvider } from "../context/ActiveEventContext";
 import type { IncidentRow } from "../model/incident";
 import { IncidentLogPage } from "./IncidentLogPage";
 
@@ -19,11 +18,9 @@ const logPageAuth: AuthContextValue = {
 function renderLog() {
   return render(
     <AuthContext.Provider value={logPageAuth}>
-      <ActiveEventProvider>
-        <MemoryRouter>
-          <IncidentLogPage />
-        </MemoryRouter>
-      </ActiveEventProvider>
+      <MemoryRouter>
+        <IncidentLogPage />
+      </MemoryRouter>
     </AuthContext.Provider>,
   );
 }
@@ -35,7 +32,6 @@ describe("IncidentLogPage", () => {
     {
       id: 1,
       created_at: "2026-07-24T12:00:00.000Z",
-      event_id: "jalsa-2026-islamabad",
       incident_date: "2026-07-24",
       incident_time: "10:30",
       incident_type: "Other",

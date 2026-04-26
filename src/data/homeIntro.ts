@@ -30,7 +30,7 @@ export function getAdminHomeTabs(): HomeTabInfo[] {
         label: "Training",
         path: "/training",
         description:
-          "Fire safety training: use the two tabs at the top of Training for the Jalsa module and a Fire Safety Order 2005 brief, then the full FSO and Jalsa (UK) page. For leads, the Red Book is a separate item in the nav.",
+          "Fire safety training: Jalsa module, Fire Safety Order 2005 tab, and full FSO (UK) page. For leads, the Red Book is a separate item in the nav.",
       },
       {
         label: "Red Book",
@@ -94,7 +94,7 @@ export function getUserHomeTabs(): HomeTabInfo[] {
       label: "Training",
       path: "/training",
       description:
-        "Fire safety training with two top tabs: the Jalsa module and a Fire Safety Order 2005 brief, plus a link to the full legal summary for Jalsa in the UK.",
+        "Fire safety training: module, FSO brief tab, and link to the full legal summary for Jalsa in the UK.",
     });
   }
   tabs.push({
