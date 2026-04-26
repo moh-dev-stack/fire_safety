@@ -9,6 +9,8 @@ const apiProxy = {
 
 export default defineConfig({
   plugins: [react(), tailwindcss()],
+  /** Main JS chunk includes app + dependencies; PDFs are separate assets. */
+  build: { chunkSizeWarningLimit: 1000 },
   server: { proxy: { ...apiProxy } },
   preview: { proxy: { ...apiProxy } },
   test: {

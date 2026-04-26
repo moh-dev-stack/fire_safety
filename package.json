@@ -8,7 +8,7 @@
     "dev:vite": "vite",
     "dev:api": "tsx scripts/local-api.ts",
     "dev:all": "npm run dev",
-    "dev:vercel": "vercel dev",
+    "dev:vercel": "npx --yes vercel@50 dev",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "test": "vitest run",
@@ -56,7 +56,6 @@
     "tsx": "^4.21.0",
     "typescript": "~5.9.3",
     "typescript-eslint": "^8.57.0",
-    "vercel": "^50.37.3",
     "vite": "^8.0.1",
     "vitest": "^4.1.2"
   }
