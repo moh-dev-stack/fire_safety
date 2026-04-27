@@ -44,7 +44,7 @@ describe("AppLayout", () => {
     expect(screen.queryByRole("link", { name: /^Log$/i })).not.toBeInTheDocument();
     expect(screen.getAllByRole("link", { name: /^Home$/i }).length).toBeGreaterThan(0);
     expect(screen.getAllByRole("link", { name: /^Report$/i }).length).toBeGreaterThan(0);
-    expect(screen.getAllByRole("link", { name: /^Help$/i }).length).toBeGreaterThan(0);
+    expect(screen.queryByRole("link", { name: /^Help$/i })).not.toBeInTheDocument();
     expect(screen.queryByRole("link", { name: /^Red Book$/i })).not.toBeInTheDocument();
   });
 
@@ -52,7 +52,10 @@ describe("AppLayout", () => {
     render(wrap(baseAuth));
     expect(screen.getAllByRole("link", { name: /^Home$/i }).length).toBeGreaterThan(0);
     expect(screen.getAllByRole("link", { name: /^Team$/i }).length).toBeGreaterThan(0);
-    expect(screen.getAllByRole("link", { name: /^Log$/i }).length).toBeGreaterThan(0);
-    expect(screen.getAllByRole("link", { name: /^Red Book$/i }).length).toBeGreaterThan(0);
+    expect(screen.queryByRole("link", { name: /^Log$/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: /^Red Book$/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: /^Rota$/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: /^Roles$/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: /^Help$/i })).not.toBeInTheDocument();
   });
 });

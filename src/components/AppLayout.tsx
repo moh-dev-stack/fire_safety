@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { Link, NavLink, Outlet } from "react-router-dom";
+import { Link, NavLink, Outlet, useLocation } from "react-router-dom";
 import { useAuth } from "../auth/useAuth";
 import {
   ENABLE_TRAINING_MODULE,
@@ -8,25 +8,23 @@ import {
 import { formatEventHeaderSubtitle, getActiveEvent } from "../data/events";
 
 const navHome = { to: "/", label: "Home" } as const;
-const navBaseBeforeReport = [
-  { to: "/team", label: "Team" },
-  { to: "/rota", label: "Rota" },
-] as const;
+const navBaseBeforeReport = [{ to: "/team", label: "Team" }] as const;
 const navTraining = { to: "/training", label: "Training" } as const;
 const navRedBook = { to: "/training/red-book-2025", label: "Red Book" } as const;
+/** Set true to show the Red Book item in the main nav and bottom bar again. */
+const ENABLE_RED_BOOK_NAV = false;
 const navVenue = { to: "/venue-checklist", label: "Venue" } as const;
 const navRest = [
   { to: "/incidents", label: "Report" },
-  { to: "/incidents/log", label: "Log" },
   { to: "/map", label: "Map" },
-  { to: "/help", label: "Help" },
-  { to: "/roles", label: "Roles" },
 ] as const;
 
 const adminNav = [
   navHome,
   ...navBaseBeforeReport,
-  ...(ENABLE_TRAINING_MODULE ? [navTraining, navRedBook] : []),
+  ...(ENABLE_TRAINING_MODULE
+    ? [navTraining, ...(ENABLE_RED_BOOK_NAV ? [navRedBook] : [])]
+    : []),
   ...(ENABLE_VENUE_CHECKLIST ? [navVenue] : []),
   ...navRest,
 ] as const;
@@ -38,10 +36,21 @@ const linkClass = ({ isActive }: { isActive: boolean }) =>
       : "text-slate-800 hover:bg-slate-200"
   }`;
 
+function teamNavIsActive(pathname: string) {
+  return pathname === "/team" || pathname.startsWith("/team/");
+}
+
+function incidentsNavIsActive(pathname: string) {
+  return pathname === "/incidents" || pathname.startsWith("/incidents/");
+}
+
 export function AppLayout() {
   const { logout, role } = useAuth();
+  const { pathname } = useLocation();
   const [open, setOpen] = useState(false);
   const activeEvent = getActiveEvent();
+  const teamActive = teamNavIsActive(pathname);
+  const incidentsActive = incidentsNavIsActive(pathname);
 
   const nav = useMemo(() => {
     if (role === "user") {
@@ -50,7 +59,6 @@ export function AppLayout() {
         { to: "/incidents", label: "Report" },
       ];
       if (ENABLE_TRAINING_MODULE) items.push(navTraining);
-      items.push({ to: "/help", label: "Help" });
       return items;
     }
     return adminNav;
@@ -98,7 +106,13 @@ export function AppLayout() {
                 key={to}
                 to={to}
                 end={to === "/"}
-                className={linkClass}
+                className={({ isActive }) =>
+                  to === "/team"
+                    ? linkClass({ isActive: teamActive })
+                    : to === "/incidents"
+                      ? linkClass({ isActive: incidentsActive })
+                      : linkClass({ isActive })
+                }
                 onClick={() => setOpen(false)}
               >
                 {label}
@@ -129,13 +143,19 @@ export function AppLayout() {
               key={to}
               to={to}
               end={to === "/"}
-              className={({ isActive }) =>
-                `flex min-h-12 min-w-[3.65rem] shrink-0 flex-col items-center justify-center rounded-xl px-1.5 text-center text-[11px] font-semibold leading-tight tracking-tight transition-colors ${
-                  isActive
+              className={({ isActive }) => {
+                const on =
+                  to === "/team"
+                    ? teamActive
+                    : to === "/incidents"
+                      ? incidentsActive
+                      : isActive;
+                return `flex min-h-12 min-w-[3.65rem] shrink-0 flex-col items-center justify-center rounded-xl px-1.5 text-center text-[11px] font-semibold leading-tight tracking-tight transition-colors ${
+                  on
                     ? "bg-red-800 text-white shadow-sm"
                     : "text-slate-600 active:bg-slate-100"
-                }`
-              }
+                }`;
+              }}
             >
               {label}
             </NavLink>

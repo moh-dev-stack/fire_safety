@@ -20,8 +20,7 @@ const authenticatedShots = [
   { path: "/incidents", file: "04-report.png" },
   { path: "/incidents/log", file: "05-log.png" },
   { path: "/map", file: "06-map.png" },
-  { path: "/help", file: "07-help.png" },
-  { path: "/roles", file: "08-roles.png" },
+  { path: "/team/roles", file: "08-roles.png" },
 ];
 
 function delay(ms) {

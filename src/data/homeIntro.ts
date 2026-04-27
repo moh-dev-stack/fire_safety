@@ -3,7 +3,13 @@ import {
   ENABLE_VENUE_CHECKLIST,
 } from "../config/features";
 
-export type HomeTabInfo = { label: string; path: string; description: string };
+export type HomeTabInfo = {
+  label: string;
+  path: string;
+  description: string;
+  /** Optional shortcuts shown under the same list item (e.g. Team sub-sections). */
+  relatedLinks?: readonly { label: string; path: string }[];
+};
 
 /** Ordered like the main nav: Home first, then the rest. */
 export function getAdminHomeTabs(): HomeTabInfo[] {
@@ -16,28 +22,21 @@ export function getAdminHomeTabs(): HomeTabInfo[] {
     {
       label: "Team",
       path: "/team",
-      description: "Who is on the fire and safety team, layers of responsibility, and how to find people when you are on shift.",
-    },
-    {
-      label: "Rota",
-      path: "/rota",
-      description: "Who is on duty and when, by day and shift, so you can see coverage during Jalsa.",
+      description:
+        "The team area has three sub-tabs: Overview (who is on the fire and safety team, layers of responsibility, how to find people on shift), Roles (short descriptions of on-site fire and safety roles), and Rota (who is on duty and when, by day and shift).",
+      relatedLinks: [
+        { label: "Roles", path: "/team/roles" },
+        { label: "Rota", path: "/team/rota" },
+      ],
     },
   ];
   if (ENABLE_TRAINING_MODULE) {
-    tabs.push(
-      {
-        label: "Training",
-        path: "/training",
-        description:
-          "Fire safety training: Jalsa module, Fire Safety Order 2005 tab, and full FSO (UK) page. For leads, the Red Book is a separate item in the nav.",
-      },
-      {
-        label: "Red Book",
-        path: "/training/red-book-2025",
-        description: "Internal 2025 action and retrospective points for organisers (read-only summary and PDF).",
-      },
-    );
+    tabs.push({
+      label: "Training",
+      path: "/training",
+      description:
+        "Fire safety training: Jalsa module, Fire Safety Order 2005 tab, and full FSO (UK) page.",
+    });
   }
   if (ENABLE_VENUE_CHECKLIST) {
     tabs.push({
@@ -50,27 +49,14 @@ export function getAdminHomeTabs(): HomeTabInfo[] {
     {
       label: "Report",
       path: "/incidents",
-      description: "Submit a fire and safety related incident: what happened, where, severity, and optional photos.",
-    },
-    {
-      label: "Log",
-      path: "/incidents/log",
-      description: "Read past reports, search and filter, and download incidents as a CSV (duty leads and admins).",
+      description:
+        "Submit a new incident and (for leads) open the log of past reports. Use the Report and Log sub-tabs at the top of this section.",
+      relatedLinks: [{ label: "Log", path: "/incidents/log" }],
     },
     {
       label: "Map",
       path: "/map",
       description: "Map of the Jalsa site (Islamabad, UK) for orientation and when giving directions over the radio.",
-    },
-    {
-      label: "Help",
-      path: "/help",
-      description: "Emergencies (999), site contacts, assembly points, and when to use the report form instead.",
-    },
-    {
-      label: "Roles",
-      path: "/roles",
-      description: "Short descriptions of on-site fire and safety roles and what they are for.",
     },
   );
   return tabs;
@@ -81,7 +67,7 @@ export function getUserHomeTabs(): HomeTabInfo[] {
     {
       label: "Home",
       path: "/",
-      description: "This screen: what each tab in your menu is for. You have a cut-down set of pages (report, training, help).",
+      description: "This screen: what each tab in your menu is for. You have a cut-down set of pages (report and training).",
     },
     {
       label: "Report",
@@ -97,10 +83,5 @@ export function getUserHomeTabs(): HomeTabInfo[] {
         "Fire safety training: module, FSO brief tab, and link to the full legal summary for Jalsa in the UK.",
     });
   }
-  tabs.push({
-    label: "Help",
-    path: "/help",
-    description: "What to do in a life-threatening emergency, site contact placeholders, and how this app fits in.",
-  });
   return tabs;
 }

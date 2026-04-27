@@ -34,6 +34,20 @@ export function HomePage() {
               </Link>
             </h2>
             <p className="mt-2 text-sm leading-relaxed text-slate-700">{t.description}</p>
+            {t.relatedLinks && t.relatedLinks.length > 0 ? (
+              <ul className="mt-3 flex flex-col gap-1.5 text-sm sm:flex-row sm:flex-wrap sm:gap-x-4 sm:gap-y-1">
+                {t.relatedLinks.map((l) => (
+                  <li key={l.path}>
+                    <Link
+                      to={l.path}
+                      className="text-red-800 underline decoration-red-200 underline-offset-2 hover:decoration-red-800"
+                    >
+                      {l.label}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            ) : null}
           </li>
         ))}
       </ol>

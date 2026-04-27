@@ -5,8 +5,8 @@ import { AppLayout } from "./components/AppLayout";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 import { IncidentLogPage } from "./pages/IncidentLogPage";
 import { ReportIncidentPage } from "./pages/ReportIncidentPage";
+import { ReportLayout } from "./pages/ReportLayout";
 import { LoginPage } from "./pages/LoginPage";
-import { HelpPage } from "./pages/HelpPage";
 import { MapPage } from "./pages/MapPage";
 import { RolesPage } from "./pages/RolesPage";
 import {
@@ -15,6 +15,7 @@ import {
 } from "./config/features";
 import { HomePage } from "./pages/HomePage";
 import { RotaPage } from "./pages/RotaPage";
+import { TeamLayout } from "./pages/TeamLayout";
 import { TeamPage } from "./pages/TeamPage";
 import { TrainingFsoBriefPage } from "./pages/TrainingFsoBriefPage";
 import { TrainingFsoJalsaPage } from "./pages/TrainingFsoJalsaPage";
@@ -40,15 +41,19 @@ export default function App() {
             path="team"
             element={
               <AdminOnlyPage>
-                <TeamPage />
+                <TeamLayout />
               </AdminOnlyPage>
             }
-          />
+          >
+            <Route index element={<TeamPage />} />
+            <Route path="roles" element={<RolesPage />} />
+            <Route path="rota" element={<RotaPage />} />
+          </Route>
           <Route
             path="rota"
             element={
               <AdminOnlyPage>
-                <RotaPage />
+                <Navigate to="/team/rota" replace />
               </AdminOnlyPage>
             }
           />
@@ -81,15 +86,17 @@ export default function App() {
               }
             />
           ) : null}
-          <Route path="incidents" element={<ReportIncidentPage />} />
-          <Route
-            path="incidents/log"
-            element={
-              <AdminOnlyPage>
-                <IncidentLogPage />
-              </AdminOnlyPage>
-            }
-          />
+          <Route path="incidents" element={<ReportLayout />}>
+            <Route index element={<ReportIncidentPage />} />
+            <Route
+              path="log"
+              element={
+                <AdminOnlyPage>
+                  <IncidentLogPage />
+                </AdminOnlyPage>
+              }
+            />
+          </Route>
           <Route
             path="map"
             element={
@@ -98,12 +105,11 @@ export default function App() {
               </AdminOnlyPage>
             }
           />
-          <Route path="help" element={<HelpPage />} />
           <Route
             path="roles"
             element={
               <AdminOnlyPage>
-                <RolesPage />
+                <Navigate to="/team/roles" replace />
               </AdminOnlyPage>
             }
           />

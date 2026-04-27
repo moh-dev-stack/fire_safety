@@ -5,15 +5,18 @@ export function postLoginPath(
   role: SessionRole | null,
 ): string {
   if (role === "user") {
-    const blocked = new Set([
-      "/team",
-      "/rota",
-      "/venue-checklist",
-      "/incidents/log",
-      "/map",
-      "/roles",
-    ]);
-    if (from && from !== "/login" && !blocked.has(from)) return from;
+    if (from && from !== "/login") {
+      if (from === "/rota" || from === "/roles" || from.startsWith("/team")) {
+        return "/";
+      }
+      const blocked = new Set([
+        "/venue-checklist",
+        "/incidents/log",
+        "/map",
+        "/help",
+      ]);
+      if (!blocked.has(from)) return from;
+    }
     return "/";
   }
   return from && from !== "/login" ? from : "/";
