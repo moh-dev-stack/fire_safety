@@ -71,6 +71,25 @@ export function TrainingModulePage() {
         </p>
       </header>
 
+      <section
+        className="rounded-xl border border-slate-200 bg-slate-50/80 p-5 shadow-sm"
+        aria-labelledby="module-dl"
+      >
+        <h2 id="module-dl" className="text-lg font-semibold text-slate-900">
+          Download the full training module (PDF)
+        </h2>
+        <p className="mt-1 text-sm text-slate-600">Slide-style deck: same source as the content above.</p>
+        <a
+          href={mainModulePdfUrl}
+          download={MODULE_DOWNLOAD_NAME}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="mt-4 inline-flex min-h-11 items-center justify-center rounded-lg bg-red-800 px-5 py-3 text-base font-semibold text-white shadow-sm hover:bg-red-900"
+        >
+          Download Fire &amp; safety training module (PDF)
+        </a>
+      </section>
+
       <section className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
         <h2 className="text-lg font-semibold text-slate-900">Learning outcomes</h2>
         <ul className="mt-4 list-inside list-disc space-y-2 text-sm text-slate-700">
@@ -348,24 +367,6 @@ export function TrainingModulePage() {
         </div>
       </section>
 
-      <section
-        className="rounded-xl border border-slate-200 bg-slate-50/80 p-5 shadow-sm"
-        aria-labelledby="module-dl"
-      >
-        <h2 id="module-dl" className="text-lg font-semibold text-slate-900">
-          Download the full training module (PDF)
-        </h2>
-        <p className="mt-1 text-sm text-slate-600">Slide-style deck: same source as the content above.</p>
-        <a
-          href={mainModulePdfUrl}
-          download={MODULE_DOWNLOAD_NAME}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="mt-4 inline-flex min-h-11 items-center justify-center rounded-lg bg-red-800 px-5 py-3 text-base font-semibold text-white shadow-sm hover:bg-red-900"
-        >
-          Download Fire &amp; safety training module (PDF)
-        </a>
-      </section>
     </div>
   );
 }
