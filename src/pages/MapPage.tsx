@@ -54,7 +54,7 @@ export function MapPage() {
       <section className="overflow-hidden rounded-xl border border-slate-200 shadow-sm">
         <img
           src={publicAsset("js2025-map.svg")}
-          alt="Fire & Safety Sign & Equipment Map — Jalsa Salana UK 2025"
+          alt="Fire &amp; Safety Sign and Equipment Map - Jalsa Salana UK 2025"
           className="w-full h-auto object-contain"
         />
       </section>

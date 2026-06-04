@@ -76,7 +76,7 @@ export function TrainingModulePage() {
         <h2 className="mt-1 text-lg font-bold text-emerald-950">Take the test</h2>
         <p className="mt-1 text-sm text-emerald-900">
           Complete the official online test to confirm your understanding of this module. This is the
-          test you need to submit — not the practice quiz below.
+          test you need to submit, not the practice quiz below.
         </p>
         <a
           href="https://forms.gle/U6eF61wZPSs7jmag6"
