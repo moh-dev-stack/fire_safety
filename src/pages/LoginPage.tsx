@@ -42,7 +42,7 @@ export function LoginPage() {
     <div className="flex min-h-screen flex-col justify-center bg-slate-100 px-4 py-10">
       <div className="mx-auto w-full max-w-md rounded-2xl border border-slate-200 bg-white p-8 shadow-sm">
         <div className="mb-4 flex justify-center">
-          <img src="/logo.png" alt="Fire & Safety" className="h-20 w-20 rounded-full object-cover" />
+          <img src="/logo.png" alt="Fire & Safety" className="h-20 w-20 object-contain" />
         </div>
         <h1 className="text-xl font-bold text-slate-900">
           Fire &amp; Safety - Jalsa 2026

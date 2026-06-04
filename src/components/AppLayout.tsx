@@ -75,7 +75,7 @@ export function AppLayout() {
               <img
                 src="/logo.png"
                 alt="Fire & Safety"
-                className="h-9 w-9 rounded-full object-cover"
+                className="h-9 w-9 object-contain"
               />
             </Link>
             <Link to={homeLink} className="min-w-0 flex-1 text-left">
