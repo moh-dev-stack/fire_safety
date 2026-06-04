@@ -2,6 +2,7 @@ import L from "leaflet";
 import { useEffect } from "react";
 import { MapContainer, Marker, Popup, TileLayer, useMap } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
+import signEquipmentMapImg from "../assets/sign-equipment-map.png";
 
 /** Approximate Jalsa site - Islamabad, UK (Surrey) */
 const VENUE: [number, number] = [51.1817, -0.7535];
@@ -50,6 +51,14 @@ export function MapPage() {
           zoom on touch devices.
         </p>
       </header>
+      <section className="overflow-hidden rounded-xl border border-slate-200 shadow-sm">
+        <img
+          src={signEquipmentMapImg}
+          alt="Fire & Safety Sign & Equipment Map — Jalsa Salana UK 2025"
+          className="w-full h-auto object-contain"
+        />
+      </section>
+
       <div className="h-[min(50vh,420px)] min-h-[280px] w-full overflow-hidden rounded-xl border border-slate-200 shadow-sm">
         <MapContainer
           center={VENUE}
