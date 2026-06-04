@@ -71,6 +71,13 @@ export function AppLayout() {
       <header className="sticky top-0 z-50 border-b border-slate-200 bg-white/95 backdrop-blur">
         <div className="mx-auto flex max-w-3xl items-center justify-between gap-3 px-4 py-3">
           <div className="flex min-w-0 flex-1 items-center gap-2 sm:gap-3">
+            <Link to={homeLink} className="shrink-0">
+              <img
+                src="/logo.png"
+                alt="Fire & Safety"
+                className="h-9 w-9 rounded-full object-cover"
+              />
+            </Link>
             <Link to={homeLink} className="min-w-0 flex-1 text-left">
               <span className="block truncate text-sm font-semibold text-slate-900">
                 {activeEvent.shortLabel}

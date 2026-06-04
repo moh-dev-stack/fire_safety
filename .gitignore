@@ -25,3 +25,4 @@ local-uploads/
 *.njsproj
 *.sln
 *.sw?
+.vercel
