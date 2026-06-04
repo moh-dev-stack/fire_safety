@@ -71,6 +71,23 @@ export function TrainingModulePage() {
         </p>
       </header>
 
+      <section className="rounded-xl border-2 border-emerald-600/40 bg-emerald-50 p-5 shadow-sm">
+        <p className="text-xs font-semibold uppercase tracking-wide text-emerald-700">Official assessment</p>
+        <h2 className="mt-1 text-lg font-bold text-emerald-950">Take the test</h2>
+        <p className="mt-1 text-sm text-emerald-900">
+          Complete the official online test to confirm your understanding of this module. This is the
+          test you need to submit — not the practice quiz below.
+        </p>
+        <a
+          href="https://forms.gle/U6eF61wZPSs7jmag6"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="mt-4 inline-flex min-h-11 items-center justify-center rounded-lg bg-emerald-700 px-5 py-3 text-base font-semibold text-white shadow-sm hover:bg-emerald-800"
+        >
+          Open test (Google Form) →
+        </a>
+      </section>
+
       <section
         className="rounded-xl border border-slate-200 bg-slate-50/80 p-5 shadow-sm"
         aria-labelledby="module-dl"
