@@ -45,7 +45,11 @@ export function LoginPage() {
           Fire &amp; Safety - Jalsa 2026
         </h1>
         <p className="mt-2 text-sm text-slate-600">
-          Sign in with your username and password.
+          Sign in with your username and password. For any issues contact{" "}
+          <a href="mailto:firesafety.jalsa@khuddam.co.uk" className="underline hover:text-slate-900">
+            firesafety.jalsa@khuddam.co.uk
+          </a>
+          .
         </p>
         <form onSubmit={(e) => void onSubmit(e)} className="mt-8 space-y-4">
           <div>
