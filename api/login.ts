@@ -11,6 +11,7 @@ const USERS: Record<string, Credential> = {
   admin: { role: "admin", password: "1234" },
   user: { role: "user", password: "kekFS2026!" },
   "firesafety.jalsa@khuddam.co.uk": { role: "admin", password: "Fire3afety2026!" },
+  "ahmadharis2@gmail.com": { role: "admin", password: "KUPNZTLxzWpqYYYeGQ5G$!" },
 };
 
 function resolveCredential(rawUsername: string): Credential | null {

@@ -11,6 +11,7 @@ import {
   emptyIncidentDraft,
   incidentCreateSchema,
   isIncidentDraftEmpty,
+  isJalsaDay,
   jalsaDaySelectLabel,
   type IncidentDraft,
 } from "../model/incident";
@@ -41,6 +42,7 @@ export function ReportIncidentPage() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+  const [outsideJalsa, setOutsideJalsa] = useState(false);
   const successRef = useRef<HTMLParagraphElement>(null);
 
   const photoSlotsLeft =
@@ -83,13 +85,11 @@ export function ReportIncidentPage() {
   }, []);
 
   useEffect(() => {
-    const allowed = new Set(event.dates);
-    setForm((f) =>
-      f.incident_date && !allowed.has(f.incident_date)
-        ? { ...f, incident_date: "" }
-        : f,
-    );
-  }, [event.dates]);
+    if (!hydrated) return;
+    if (form.incident_date && !isJalsaDay(form.incident_date)) {
+      setOutsideJalsa(true);
+    }
+  }, [hydrated, form.incident_date]);
 
   useEffect(() => {
     if (!draftNotice) return;
@@ -220,24 +220,56 @@ export function ReportIncidentPage() {
           <div className="grid gap-4 sm:grid-cols-2">
             <div>
               <label htmlFor="incident_date" className="block text-sm font-medium text-slate-700">
-                Incident date (Jalsa days) <span className="text-red-700">*</span>
+                Incident date {outsideJalsa ? "" : "(Jalsa days)"} <span className="text-red-700">*</span>
               </label>
-              <select
-                id="incident_date"
-                required
-                value={form.incident_date}
-                onChange={(e) =>
-                  setForm((f) => ({ ...f, incident_date: e.target.value }))
-                }
-                className="mt-1 w-full min-h-11 rounded-lg border border-slate-300 px-3 py-2 text-base"
-              >
-                <option value="">Select day</option>
-                {event.dates.map((d) => (
-                  <option key={d} value={d}>
-                    {jalsaDaySelectLabel(d)}
-                  </option>
-                ))}
-              </select>
+              {outsideJalsa ? (
+                <input
+                  id="incident_date"
+                  type="date"
+                  required
+                  value={form.incident_date}
+                  onChange={(e) =>
+                    setForm((f) => ({ ...f, incident_date: e.target.value }))
+                  }
+                  className="mt-1 w-full min-h-11 rounded-lg border border-slate-300 px-3 py-2 text-base"
+                />
+              ) : (
+                <select
+                  id="incident_date"
+                  required
+                  value={form.incident_date}
+                  onChange={(e) => {
+                    const v = e.target.value;
+                    if (v === "__outside__") {
+                      setOutsideJalsa(true);
+                      setForm((f) => ({ ...f, incident_date: "" }));
+                    } else {
+                      setForm((f) => ({ ...f, incident_date: v }));
+                    }
+                  }}
+                  className="mt-1 w-full min-h-11 rounded-lg border border-slate-300 px-3 py-2 text-base"
+                >
+                  <option value="">Select day</option>
+                  {event.dates.map((d) => (
+                    <option key={d} value={d}>
+                      {jalsaDaySelectLabel(d)}
+                    </option>
+                  ))}
+                  <option value="__outside__">Outside Jalsa (pick a date)…</option>
+                </select>
+              )}
+              {outsideJalsa ? (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setOutsideJalsa(false);
+                    setForm((f) => ({ ...f, incident_date: "" }));
+                  }}
+                  className="mt-1 text-xs font-medium text-red-800 underline"
+                >
+                  Back to Jalsa days
+                </button>
+              ) : null}
             </div>
             <div>
               <label htmlFor="incident_time" className="block text-sm font-medium text-slate-700">

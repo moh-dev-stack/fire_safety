@@ -170,10 +170,26 @@ describe("incidentCreateSchema", () => {
     ).toThrow();
   });
 
-  it("rejects on-site date outside current Jalsa weekend (2026)", () => {
+  it("accepts a valid YYYY-MM-DD outside the Jalsa weekend (Outside Jalsa mode)", () => {
     expect(() =>
       incidentCreateSchema.parse({
         incident_date: "2025-07-25",
+        incident_time: "09:00",
+        incident_type: "Other",
+        severity: "Medium",
+        location: SITE_LOCATIONS[0],
+        description: "Test",
+        actions_taken: "None",
+        reporter_name: "X",
+        department: "Ops",
+      }),
+    ).not.toThrow();
+  });
+
+  it("rejects a malformed incident_date", () => {
+    expect(() =>
+      incidentCreateSchema.parse({
+        incident_date: "25/07/2025",
         incident_time: "09:00",
         incident_type: "Other",
         severity: "Medium",

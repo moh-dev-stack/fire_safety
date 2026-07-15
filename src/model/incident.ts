@@ -51,6 +51,17 @@ const JALSA_2026_DATES_SORTED = [...getEventById(USER_FIXED_EVENT_ID)!.dates].so
 
 export const jalsaDaySchema = z.enum(JALSA_2026_DATES_SORTED);
 
+/** Accepts a Jalsa day or any valid YYYY-MM-DD (for incidents outside the event). */
+export const incidentDateSchema = z
+  .string()
+  .min(1, "Choose an incident date")
+  .refine((s) => /^\d{4}-\d{2}-\d{2}$/.test(s), {
+    message: "Date must be in YYYY-MM-DD format",
+  })
+  .refine((s) => !Number.isNaN(new Date(s + "T12:00:00Z").getTime()), {
+    message: "Enter a valid calendar date",
+  });
+
 export function jalsaDaySelectLabel(iso: string): string {
   if (!(JALSA_2026_DATES_SORTED as readonly string[]).includes(iso)) {
     return iso;
@@ -61,6 +72,10 @@ export function jalsaDaySelectLabel(iso: string): string {
     month: "short",
     year: "numeric",
   });
+}
+
+export function isJalsaDay(iso: string): boolean {
+  return (JALSA_2026_DATES_SORTED as readonly string[]).includes(iso);
 }
 
 /** Main site areas - Islamabad UK Jalsa (adjust list as needed). */
@@ -131,7 +146,7 @@ const imageUrlSchema = z
   }, "Each image must be a valid HTTPS URL from Vercel Blob storage");
 
 const incidentFieldsBase = {
-  incident_date: jalsaDaySchema,
+  incident_date: incidentDateSchema,
   incident_time: z
     .string()
     .min(1, "Choose a time on site")

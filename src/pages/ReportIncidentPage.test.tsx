@@ -146,6 +146,89 @@ describe("ReportIncidentPage", () => {
     expect(postInit).toBeDefined();
   });
 
+  it("submits an Outside Jalsa report with a native date input", async () => {
+    let postedBody: Record<string, unknown> | null = null;
+    fetchMock.mockImplementation(
+      (input: RequestInfo | URL, init?: RequestInit) => {
+        const url = typeof input === "string" ? input : input.toString();
+        if (url.includes("/api/incidents/draft")) {
+          if (init?.method === "PUT" || init?.method === "DELETE") {
+            return Promise.resolve({ ok: true, status: 204 } as Response);
+          }
+          return Promise.resolve({
+            ok: true,
+            json: () => Promise.resolve({ draft: null }),
+          } as Response);
+        }
+        if (url.includes("/api/incidents") && init?.method === "POST") {
+          postedBody = JSON.parse(init.body as string) as Record<string, unknown>;
+          return Promise.resolve({
+            ok: true,
+            json: () =>
+              Promise.resolve({
+                id: 77,
+                created_at: new Date().toISOString(),
+                image_urls: [],
+              }),
+          } as Response);
+        }
+        return Promise.reject(
+          new Error(`unexpected fetch ${url} ${init?.method ?? "GET"}`),
+        );
+      },
+    );
+
+    const user = userEvent.setup();
+    renderReport();
+
+    await user.selectOptions(
+      screen.getByLabelText(/Incident date/i),
+      "__outside__",
+    );
+
+    const dateInput = await screen.findByLabelText(/Incident date/i);
+    expect(dateInput).toHaveAttribute("type", "date");
+    await user.type(dateInput, "2026-03-15");
+
+    await user.selectOptions(screen.getByLabelText(/^Time on site/i), "09:00");
+    await user.selectOptions(
+      screen.getByLabelText(/Fire & safety category/i),
+      "Medical",
+    );
+    await user.selectOptions(screen.getByLabelText(/^Severity/i), "Low");
+    await user.selectOptions(
+      screen.getByLabelText(/Location on site/i),
+      "Medical / first-aid tent",
+    );
+    await user.type(
+      screen.getByLabelText(/What happened/i),
+      "Pre-event site walk finding.",
+    );
+    await user.type(
+      screen.getByLabelText(/Actions taken/i),
+      "Logged for follow-up.",
+    );
+    await user.type(screen.getByLabelText(/^Your name/i), "Ahmad Haris");
+    await user.type(
+      screen.getByLabelText(/Department or team/i),
+      "Fire marshal recce",
+    );
+
+    await user.click(screen.getByRole("button", { name: /Submit fire/ }));
+
+    await waitFor(() => {
+      expect(postedBody).toEqual(
+        expect.objectContaining({
+          incident_date: "2026-03-15",
+          incident_time: "09:00",
+          incident_type: "Medical",
+          severity: "Low",
+          location: "Medical / first-aid tent",
+        }),
+      );
+    });
+  });
+
   it("lists every site location in the dropdown", () => {
     renderReport();
     for (const loc of SITE_LOCATIONS) {
