@@ -8,7 +8,10 @@ import {
 import { formatEventHeaderSubtitle, getActiveEvent } from "../data/events";
 
 const navHome = { to: "/", label: "Home" } as const;
-const navBaseBeforeReport = [{ to: "/team", label: "Team" }] as const;
+const navBaseBeforeReport = [
+  { to: "/team", label: "Team" },
+  { to: "/team/tasks", label: "Tasks" },
+] as const;
 const navTraining = { to: "/training", label: "FAQ" } as const;
 const navRedBook = { to: "/training/red-book-2025", label: "Red Book" } as const;
 /** Set true to show the Red Book item in the main nav and bottom bar again. */
@@ -37,7 +40,12 @@ const linkClass = ({ isActive }: { isActive: boolean }) =>
   }`;
 
 function teamNavIsActive(pathname: string) {
+  if (pathname === "/team/tasks" || pathname.startsWith("/team/tasks/")) return false;
   return pathname === "/team" || pathname.startsWith("/team/");
+}
+
+function tasksNavIsActive(pathname: string) {
+  return pathname === "/team/tasks" || pathname.startsWith("/team/tasks/");
 }
 
 function incidentsNavIsActive(pathname: string) {
@@ -50,6 +58,7 @@ export function AppLayout() {
   const [open, setOpen] = useState(false);
   const activeEvent = getActiveEvent();
   const teamActive = teamNavIsActive(pathname);
+  const tasksActive = tasksNavIsActive(pathname);
   const incidentsActive = incidentsNavIsActive(pathname);
 
   const nav = useMemo(() => {
@@ -116,9 +125,11 @@ export function AppLayout() {
                 className={({ isActive }) =>
                   to === "/team"
                     ? linkClass({ isActive: teamActive })
-                    : to === "/incidents"
-                      ? linkClass({ isActive: incidentsActive })
-                      : linkClass({ isActive })
+                    : to === "/team/tasks"
+                      ? linkClass({ isActive: tasksActive })
+                      : to === "/incidents"
+                        ? linkClass({ isActive: incidentsActive })
+                        : linkClass({ isActive })
                 }
                 onClick={() => setOpen(false)}
               >
@@ -154,9 +165,11 @@ export function AppLayout() {
                 const on =
                   to === "/team"
                     ? teamActive
-                    : to === "/incidents"
-                      ? incidentsActive
-                      : isActive;
+                    : to === "/team/tasks"
+                      ? tasksActive
+                      : to === "/incidents"
+                        ? incidentsActive
+                        : isActive;
                 return `flex min-h-12 min-w-[3.65rem] shrink-0 flex-col items-center justify-center rounded-xl px-1.5 text-center text-[11px] font-semibold leading-tight tracking-tight transition-colors ${
                   on
                     ? "bg-red-800 text-white shadow-sm"

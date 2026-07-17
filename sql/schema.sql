@@ -32,7 +32,7 @@ ALTER TABLE incidents ADD COLUMN IF NOT EXISTS department TEXT NOT NULL DEFAULT 
 -- Legacy optional geotag field (removed from the app).
 ALTER TABLE incidents DROP COLUMN IF EXISTS incident_w3w;
 
--- Event scoping was removed; drop column if a previous migration added it.
+-- Event scoping was removed. Drop column if a previous migration added it.
 ALTER TABLE incidents DROP COLUMN IF EXISTS event_id;
 DROP INDEX IF EXISTS incidents_event_id_idx;
 
