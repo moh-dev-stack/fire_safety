@@ -16,6 +16,7 @@ import {
 import { HomePage } from "./pages/HomePage";
 import { RotaPage } from "./pages/RotaPage";
 import { TeamLayout } from "./pages/TeamLayout";
+import { TasksPage } from "./pages/TasksPage";
 import { TeamPage } from "./pages/TeamPage";
 import { TrainingFsoBriefPage } from "./pages/TrainingFsoBriefPage";
 import { TrainingFsoJalsaPage } from "./pages/TrainingFsoJalsaPage";
@@ -48,6 +49,7 @@ export default function App() {
             <Route index element={<TeamPage />} />
             <Route path="roles" element={<RolesPage />} />
             <Route path="rota" element={<RotaPage />} />
+            <Route path="tasks" element={<TasksPage />} />
           </Route>
           <Route
             path="rota"

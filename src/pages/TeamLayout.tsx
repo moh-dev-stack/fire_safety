@@ -35,6 +35,13 @@ export function TeamLayout() {
         >
           Rota
         </NavLink>
+        <NavLink
+          to="/team/tasks"
+          role="tab"
+          className={({ isActive }) => `${baseTab} ${isActive ? activeTab : idleTab}`}
+        >
+          Tasks
+        </NavLink>
       </div>
       <div className="pt-6 sm:pt-8">
         <Outlet />

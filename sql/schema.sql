@@ -35,3 +35,18 @@ ALTER TABLE incidents DROP COLUMN IF EXISTS incident_w3w;
 -- Event scoping was removed; drop column if a previous migration added it.
 ALTER TABLE incidents DROP COLUMN IF EXISTS event_id;
 DROP INDEX IF EXISTS incidents_event_id_idx;
+
+-- Simple internal task list (admin only). Notes stored as an append-only JSONB log.
+CREATE TABLE IF NOT EXISTS tasks (
+  id SERIAL PRIMARY KEY,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  task TEXT NOT NULL,
+  deadline DATE,
+  allocation TEXT NOT NULL DEFAULT '',
+  status TEXT NOT NULL DEFAULT 'pending',
+  notes JSONB NOT NULL DEFAULT '[]'::jsonb
+);
+
+CREATE INDEX IF NOT EXISTS tasks_status_idx ON tasks (status);
+CREATE INDEX IF NOT EXISTS tasks_deadline_idx ON tasks (deadline);

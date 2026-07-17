@@ -5,6 +5,7 @@ import {
   type IncidentDraft,
 } from "../model/incident";
 import type { SessionRole } from "../model/sessionRole";
+import type { TaskCreate, TaskRow, TaskStatus } from "../model/task";
 
 export type FetchIncidentDraftResult = {
   draft: IncidentDraft | null;
@@ -155,6 +156,52 @@ export async function createIncident(body: IncidentCreate) {
     throw new Error(j.hint ? `${msg} - ${j.hint}` : msg);
   }
   return res.json();
+}
+
+export async function fetchTasks(): Promise<TaskRow[]> {
+  const res = await apiFetch("/api/tasks");
+  if (!res.ok) throw new Error("Failed to load tasks");
+  return res.json() as Promise<TaskRow[]>;
+}
+
+export async function createTask(body: TaskCreate): Promise<TaskRow> {
+  const res = await apiFetch("/api/tasks", {
+    method: "POST",
+    body: JSON.stringify(body),
+  });
+  if (!res.ok) {
+    const j = (await res.json().catch(() => ({}))) as { error?: string };
+    throw new Error(j.error ?? "Failed to create task");
+  }
+  return res.json() as Promise<TaskRow>;
+}
+
+export type TaskPatch = {
+  task?: string;
+  deadline?: string | null;
+  allocation?: string;
+  status?: TaskStatus;
+  appendNote?: { author: string; body: string };
+};
+
+export async function updateTask(
+  id: number,
+  patch: TaskPatch,
+): Promise<TaskRow> {
+  const res = await apiFetch(`/api/tasks/${id}`, {
+    method: "PATCH",
+    body: JSON.stringify(patch),
+  });
+  if (!res.ok) {
+    const j = (await res.json().catch(() => ({}))) as { error?: string };
+    throw new Error(j.error ?? "Failed to update task");
+  }
+  return res.json() as Promise<TaskRow>;
+}
+
+export async function deleteTask(id: number): Promise<void> {
+  const res = await apiFetch(`/api/tasks/${id}`, { method: "DELETE" });
+  if (!res.ok) throw new Error("Failed to delete task");
 }
 
 export async function downloadIncidentsCsv() {

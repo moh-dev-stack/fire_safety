@@ -63,6 +63,31 @@ app.post("/api/incidents/blob-upload", (req, res) => {
   );
 });
 
+app.get("/api/tasks", (req, res) => {
+  void import("../api/tasks.ts").then((m) => m.default(vReq(req), vRes(res)));
+});
+app.post("/api/tasks", (req, res) => {
+  void import("../api/tasks.ts").then((m) => m.default(vReq(req), vRes(res)));
+});
+app.patch("/api/tasks/:id", (req, res) => {
+  (req as unknown as { query: Record<string, string> }).query = {
+    ...(req.query as Record<string, string>),
+    id: req.params.id,
+  };
+  void import("../api/tasks/[id].ts").then((m) =>
+    m.default(vReq(req), vRes(res)),
+  );
+});
+app.delete("/api/tasks/:id", (req, res) => {
+  (req as unknown as { query: Record<string, string> }).query = {
+    ...(req.query as Record<string, string>),
+    id: req.params.id,
+  };
+  void import("../api/tasks/[id].ts").then((m) =>
+    m.default(vReq(req), vRes(res)),
+  );
+});
+
 app.get("/api/cron/snapshot-incidents", (req, res) => {
   void import("../api/cron/snapshot-incidents.ts").then((m) =>
     m.default(vReq(req), vRes(res)),

@@ -26,3 +26,4 @@ local-uploads/
 *.sln
 *.sw?
 .vercel
+.env*
