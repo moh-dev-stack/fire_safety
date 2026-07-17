@@ -44,7 +44,7 @@ function statusPill(status: TaskStatus) {
 }
 
 function formatDate(iso: string | null | undefined): string {
-  if (!iso) return "—";
+  if (!iso) return "-";
   const d = new Date(iso.length === 10 ? iso + "T12:00:00" : iso);
   if (Number.isNaN(d.getTime())) return iso;
   return d.toLocaleDateString("en-GB", {
@@ -158,7 +158,7 @@ function TaskCard({
               <dt className="font-semibold uppercase tracking-wide text-slate-500">
                 Allocated
               </dt>
-              <dd>{row.allocation || "—"}</dd>
+              <dd>{row.allocation || "-"}</dd>
             </div>
             <div>
               <dt className="font-semibold uppercase tracking-wide text-slate-500">
@@ -182,14 +182,17 @@ function TaskCard({
               </option>
             ))}
           </select>
-          <button
-            type="button"
-            className={btnSecondary}
-            onClick={remove}
-            disabled={saving}
-          >
-            Delete
-          </button>
+          {row.status === "completed" ? (
+            <button
+              type="button"
+              className={btnSecondary}
+              onClick={remove}
+              disabled={saving}
+              title="Delete this task permanently"
+            >
+              Delete
+            </button>
+          ) : null}
         </div>
       </div>
 
@@ -344,8 +347,13 @@ export function TasksPage() {
           Tasks
         </h1>
         <p className="mt-2 text-sm text-slate-600 sm:text-base">
-          Internal to-do list — replaces spreadsheets for tracking day-to-day
+          Internal to-do list. Replaces spreadsheets for tracking day-to-day
           jobs. Add a task, allocate it, and append notes as things move.
+        </p>
+        <p className="mt-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-900 sm:text-sm">
+          Heads up: tasks can only be deleted after they are marked
+          <span className="mx-1 font-semibold">Completed</span>. Change the
+          status first, then the Delete button will appear.
         </p>
       </header>
 

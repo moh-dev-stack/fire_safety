@@ -69,20 +69,23 @@ app.get("/api/tasks", (req, res) => {
 app.post("/api/tasks", (req, res) => {
   void import("../api/tasks.ts").then((m) => m.default(vReq(req), vRes(res)));
 });
+function withParamAsQuery(req: Request, key: string, value: string) {
+  Object.defineProperty(req, "query", {
+    configurable: true,
+    enumerable: true,
+    get() {
+      return { [key]: value };
+    },
+  });
+}
 app.patch("/api/tasks/:id", (req, res) => {
-  (req as unknown as { query: Record<string, string> }).query = {
-    ...(req.query as Record<string, string>),
-    id: req.params.id,
-  };
+  withParamAsQuery(req, "id", req.params.id);
   void import("../api/tasks/[id].ts").then((m) =>
     m.default(vReq(req), vRes(res)),
   );
 });
 app.delete("/api/tasks/:id", (req, res) => {
-  (req as unknown as { query: Record<string, string> }).query = {
-    ...(req.query as Record<string, string>),
-    id: req.params.id,
-  };
+  withParamAsQuery(req, "id", req.params.id);
   void import("../api/tasks/[id].ts").then((m) =>
     m.default(vReq(req), vRes(res)),
   );

@@ -8,10 +8,7 @@ import {
 import { formatEventHeaderSubtitle, getActiveEvent } from "../data/events";
 
 const navHome = { to: "/", label: "Home" } as const;
-const navBaseBeforeReport = [
-  { to: "/team", label: "Team" },
-  { to: "/team/tasks", label: "Tasks" },
-] as const;
+const navBaseBeforeReport = [{ to: "/team", label: "Team" }] as const;
 const navTraining = { to: "/training", label: "FAQ" } as const;
 const navRedBook = { to: "/training/red-book-2025", label: "Red Book" } as const;
 /** Set true to show the Red Book item in the main nav and bottom bar again. */
@@ -19,6 +16,7 @@ const ENABLE_RED_BOOK_NAV = false;
 const navVenue = { to: "/venue-checklist", label: "Venue" } as const;
 const navRest = [
   { to: "/incidents", label: "Report" },
+  { to: "/team/tasks", label: "Tasks" },
   { to: "/map", label: "Map" },
 ] as const;
 
