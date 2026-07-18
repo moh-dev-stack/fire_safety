@@ -195,6 +195,11 @@ function TaskCard({
           ) : null}
         </div>
       </div>
+      {error ? (
+        <p className="mt-3 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800">
+          {error}
+        </p>
+      ) : null}
 
       <div className="mt-4">
         <button
@@ -243,9 +248,6 @@ function TaskCard({
                   onChange={(e) => setNoteBody(e.target.value)}
                 />
               </div>
-              {error ? (
-                <p className="text-sm text-red-700">{error}</p>
-              ) : null}
               <div className="flex justify-end">
                 <button
                   type="submit"
