@@ -78,6 +78,50 @@ function TaskCard({
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [expanded, setExpanded] = useState(false);
+  const [editing, setEditing] = useState(false);
+  const [editTask, setEditTask] = useState(row.task);
+  const [editDeadline, setEditDeadline] = useState(row.deadline ?? "");
+  const [editAllocation, setEditAllocation] = useState(row.allocation);
+
+  const startEdit = useCallback(() => {
+    setEditTask(row.task);
+    setEditDeadline(row.deadline ?? "");
+    setEditAllocation(row.allocation);
+    setError(null);
+    setEditing(true);
+  }, [row.allocation, row.deadline, row.task]);
+
+  const cancelEdit = useCallback(() => {
+    setEditing(false);
+    setError(null);
+  }, []);
+
+  const saveEdit = useCallback(
+    async (e: FormEvent) => {
+      e.preventDefault();
+      const nextTask = editTask.trim();
+      if (!nextTask) {
+        setError("Task cannot be empty");
+        return;
+      }
+      setSaving(true);
+      setError(null);
+      try {
+        const next = await api.updateTask(row.id, {
+          task: nextTask,
+          deadline: editDeadline ? editDeadline : null,
+          allocation: editAllocation.trim(),
+        });
+        onChanged(next);
+        setEditing(false);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Failed to save");
+      } finally {
+        setSaving(false);
+      }
+    },
+    [editAllocation, editDeadline, editTask, onChanged, row.id],
+  );
 
   const notesSorted = useMemo(
     () => [...row.notes].sort((a, b) => (a.at > b.at ? -1 : 1)),
@@ -136,6 +180,85 @@ function TaskCard({
 
   return (
     <li className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:p-5">
+      {editing ? (
+        <form onSubmit={saveEdit} className="space-y-3">
+          <div className="flex items-center gap-2 text-xs text-slate-500">
+            <span className="font-semibold text-slate-700">#{row.id}</span>
+            <span className={statusPill(row.status)}>
+              {TASK_STATUS_LABELS[row.status]}
+            </span>
+            <span className="text-slate-400">· editing</span>
+          </div>
+          <div>
+            <label
+              className={labelClass}
+              htmlFor={`edit-task-${row.id}`}
+            >
+              Task
+            </label>
+            <input
+              id={`edit-task-${row.id}`}
+              type="text"
+              required
+              maxLength={2000}
+              className={inputClass + " mt-1"}
+              value={editTask}
+              onChange={(e) => setEditTask(e.target.value)}
+              autoFocus
+            />
+          </div>
+          <div className="grid gap-3 sm:grid-cols-2">
+            <div>
+              <label
+                className={labelClass}
+                htmlFor={`edit-deadline-${row.id}`}
+              >
+                Deadline
+              </label>
+              <input
+                id={`edit-deadline-${row.id}`}
+                type="date"
+                className={inputClass + " mt-1"}
+                value={editDeadline}
+                onChange={(e) => setEditDeadline(e.target.value)}
+              />
+            </div>
+            <div>
+              <label
+                className={labelClass}
+                htmlFor={`edit-allocation-${row.id}`}
+              >
+                Allocated to
+              </label>
+              <input
+                id={`edit-allocation-${row.id}`}
+                type="text"
+                maxLength={200}
+                className={inputClass + " mt-1"}
+                value={editAllocation}
+                onChange={(e) => setEditAllocation(e.target.value)}
+              />
+            </div>
+          </div>
+          <div className="flex justify-end gap-2">
+            <button
+              type="button"
+              className={btnSecondary}
+              onClick={cancelEdit}
+              disabled={saving}
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              className={btnPrimary}
+              disabled={saving || !editTask.trim()}
+            >
+              {saving ? "Saving…" : "Save changes"}
+            </button>
+          </div>
+        </form>
+      ) : (
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2 text-xs text-slate-500">
@@ -182,6 +305,14 @@ function TaskCard({
               </option>
             ))}
           </select>
+          <button
+            type="button"
+            className={btnSecondary}
+            onClick={startEdit}
+            disabled={saving}
+          >
+            Edit
+          </button>
           {row.status === "completed" ? (
             <button
               type="button"
@@ -195,6 +326,7 @@ function TaskCard({
           ) : null}
         </div>
       </div>
+      )}
       {error ? (
         <p className="mt-3 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800">
           {error}
