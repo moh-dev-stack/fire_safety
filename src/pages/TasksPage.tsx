@@ -270,20 +270,20 @@ function TaskCard({
           <p className="mt-1 text-base font-semibold leading-snug text-slate-900">
             {row.task}
           </p>
-          <dl className="mt-2 grid grid-cols-2 gap-x-4 gap-y-1 text-xs text-slate-600 sm:grid-cols-3">
-            <div>
+          <dl className="mt-2 flex flex-col gap-1 text-xs text-slate-600 sm:grid sm:grid-cols-3 sm:gap-x-4">
+            <div className="flex gap-2 sm:block">
               <dt className="font-semibold uppercase tracking-wide text-slate-500">
                 Deadline
               </dt>
               <dd>{formatDate(row.deadline)}</dd>
             </div>
-            <div>
+            <div className="flex gap-2 sm:block">
               <dt className="font-semibold uppercase tracking-wide text-slate-500">
                 Allocated
               </dt>
-              <dd>{row.allocation || "-"}</dd>
+              <dd className="min-w-0 break-words">{row.allocation || "-"}</dd>
             </div>
-            <div>
+            <div className="flex gap-2 sm:block">
               <dt className="font-semibold uppercase tracking-wide text-slate-500">
                 Added
               </dt>
